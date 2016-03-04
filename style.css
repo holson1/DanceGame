@@ -1,0 +1,34 @@
+* { 
+	padding: 0; margin: 0; 
+}
+
+html {
+	height: 100%;
+	width: 100%;
+	background: -moz-linear-gradient(#2793B8, #080A0A);
+}
+
+.header {
+	margin-top: 55px;
+	margin-bottom: 15px;
+	margin-left: auto;
+	margin-right: auto;
+	background: #eee;
+	width: 480px;
+	text-align: center;
+	font-size: 25px;
+	font-family: Arial;
+}
+
+.backgroundDiv {
+	background: url('planeta.jpg');
+	width: 480px;
+	height: 480px;
+	margin: 0 auto;
+}
+canvas { 
+	
+	background: rgba(0,0,0,0.8);
+	display: block;
+	margin: 0 auto;
+}
