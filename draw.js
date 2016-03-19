@@ -16,7 +16,8 @@ function drawCatcher() {
 	ctx.closePath();
 
 	// square animation
-	if (cooldown[1] > 0) {
+	
+	if (cooldown[1] > 0 && collisions[1]) {
 		var factor = 0.8 + (1/cooldown[1]);
 		ctx.beginPath();
 		//ctx.rect(x + radius - overlap, y - ((rectHeight*factor)/2), rectWidth*factor, rectHeight*factor);
@@ -28,6 +29,7 @@ function drawCatcher() {
 		ctx.fill();
 		ctx.closePath();
 	}
+	
 
 	// bottom rect
 	ctx.beginPath();
@@ -42,6 +44,7 @@ function drawCatcher() {
 	ctx.closePath();
 
 	// square animation
+	/*
 	if (cooldown[2] > 0) {
 		var factor = 0.8 + (1/cooldown[2]);
 		ctx.beginPath();
@@ -54,6 +57,7 @@ function drawCatcher() {
 		ctx.fill();
 		ctx.closePath();
 	}
+	*/
 
 	// left rect
 	ctx.beginPath();
@@ -68,6 +72,7 @@ function drawCatcher() {
 	ctx.closePath();
 
 	// square animation
+	/*
 	if (cooldown[3] > 0) {
 		var factor = 0.8 + (1/cooldown[3]);
 		ctx.beginPath();
@@ -80,6 +85,7 @@ function drawCatcher() {
 		ctx.fill();
 		ctx.closePath();
 	}
+	*/
 
 	// top rect
 	ctx.beginPath();
@@ -94,6 +100,7 @@ function drawCatcher() {
 	ctx.closePath();
 
 	// square animation
+	/*
 	if (cooldown[0] > 0) {
 		var factor = 0.8 + (1/cooldown[0]);
 		ctx.beginPath();
@@ -106,6 +113,7 @@ function drawCatcher() {
 		ctx.fill();
 		ctx.closePath();
 	}
+	*/
 
 	// circle
 	ctx.beginPath();
@@ -125,7 +133,7 @@ function drawCatcher() {
 	// just a fun animation test
 	// just kidding, this is awesome! animation for the super power
 	if (cooldown[4] > 0) {
-		var factor = 1 + (5/cooldown[4]);
+		var factor = 1 + (((70-radius) / 10)/cooldown[4]);
 		ctx.beginPath();
 		ctx.arc(x, y, radius * factor, 0, Math.PI*2, false);
 		ctx.strokeStyle = "white";
@@ -195,7 +203,7 @@ function drawHealth() {
 	var r = Math.floor(255 * (1-factor));
 	var rString = r.toString();
 
-	console.log(gbString);
+	//console.log(gbString);
 
 	// health
 	ctx.beginPath();
@@ -204,4 +212,14 @@ function drawHealth() {
 	//ctx.fillStyle = "blue";
 	ctx.fill();
 	ctx.closePath();	
+}
+
+// draw an orb at any position
+function drawOrb(xpos, ypos, color) {
+
+	ctx.beginPath();
+	ctx.arc(xpos, ypos, orbRadius, 0, Math.PI*2, false);
+	ctx.fillStyle = color;
+	ctx.fill();
+	ctx.closePath();
 }

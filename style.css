@@ -5,25 +5,26 @@
 html {
 	height: 100%;
 	width: 100%;
-	background: -moz-linear-gradient(#2793B8, #080A0A);
+	/*background: -moz-linear-gradient(#2793B8, #080A0A);*/
 }
 
 .header {
-	margin-top: 55px;
+	margin-top: 15px;
 	margin-bottom: 15px;
 	margin-left: auto;
 	margin-right: auto;
 	background: #eee;
-	width: 480px;
+	width: 530px;
 	text-align: center;
 	font-size: 25px;
 	font-family: Arial;
 }
 
 .backgroundDiv {
-	background: url('planeta.jpg');
-	width: 480px;
-	height: 480px;
+	/*background: url('planeta.jpg');*/
+	background: -moz-linear-gradient(#2793B8, #080A0A);
+	width: 530px;
+	height: 530px;
 	margin: 0 auto;
 }
 canvas { 
