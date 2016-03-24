@@ -3,18 +3,27 @@ var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
 
 // timing vars
-// ex: 50 FPS = 20 ms per frame
 var FPS = 50;
-// ex: 120 BPM = 500 ms per beat
-var BPM = 60;
-// hard code for now @ 25 frames/beat
-var frameCounter = 50;
+// starting BPM, will change eventually
+var BPM = 100;
+var BPS = (BPM / 60);
+// we always want a whole number closest to our BPM so that we can decrement it properly
+var framesPerBeat = Math.ceil(FPS / BPS);
+// frames/beat
+var frameCounter = framesPerBeat;
+
+function calcFramesPerBeat(FPS, BPM) {
+	var BPS = BPM / 60;
+	return Math.ceil(FPS / BPS);
+}
 
 // score vars
 var health = 700;
 var score = 0;
 var special = 0;
-var value = 100;
+var scoreIncr = 100;
+var healthIncr = 40;
+var healthPenalty = 20;
 var r = 0;
 var g = 255;
 var b = 255; 
@@ -29,15 +38,23 @@ var overlap = 6;
 
 // orb vars
 var orbRadius = 6;
-//var yPos = 0;
-//var dy = 2;
-var delta = 2;
+
+// calculate orbSpeed based on BPM
+var distanceToRectCenter = x - radius - (rectWidth / 2) + overlap;
+// this could be a factor of BPM...the higher the BPM the faster the orb should move
+//var beatsToCenter = 2;
+var beatsToCenter = 200/BPM;
+
+var distancePerBeat = distanceToRectCenter / beatsToCenter;
+//var orbSpeed = 2;
+var orbSpeed = distancePerBeat / framesPerBeat;
 
 // collision vars
-var colTop = y - radius;
-var colRight = x + radius;
-var colBot = y  + radius;
-var colLeft = x - radius;
+// these represent where we want to kill the orbs if they've passed the squares
+var boundTop = y - radius + overlap;
+var boundRight = x + radius - overlap;
+var boundBot = y  + radius - overlap;
+var boundLeft = x - radius + overlap;
 
 // vars for controlling input
 // up, right, down, left, power, pause
@@ -50,15 +67,28 @@ var buttonSelect = 0;
 // var for standard cooldown
 var cooldownLength = 5;
 
+// arrays for storing objects
+var orbs = [];
+var rects = [];
+
+// add squares
+rects.push(new Rect(x - (rectHeight/2), y - radius - rectWidth + overlap, rectHeight, rectWidth, "red", 0));
+rects.push(new Rect(x + radius - overlap, y - (rectHeight/2), rectWidth, rectHeight, "blue", 1));
+rects.push(new Rect(x - (rectHeight/2), y + radius - overlap, rectHeight, rectWidth, "green", 2));
+rects.push(new Rect(x - radius - rectWidth + overlap, y - (rectHeight/2), rectWidth, rectHeight, "yellow", 3));
+
+
+// *** INPUT HANDLING ***
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
-
 
 function keyDownHandler(e) {
 	switch (e.keyCode) {
 		case 39:
 			if (cooldown[1] == 0 && keyReady[1]) {
 				buttonArr[1] = true;
+				// this is a little hacky, we should really integrate the inputHandling into the game loop
+				handleCollisions();
 				keyReady[1] = false;
 				cooldown[1] = cooldownLength;
 				//score += value;
@@ -68,6 +98,7 @@ function keyDownHandler(e) {
 		case 38:
 			if (cooldown[0] == 0 && keyReady[0]) {
 				buttonArr[0] = true;
+				handleCollisions();
 				keyReady[0] = false;
 				cooldown[0] = cooldownLength;
 				//score += value;
@@ -77,6 +108,7 @@ function keyDownHandler(e) {
 		case 40:
 			if (cooldown[2] == 0 && keyReady[2]) {
 				buttonArr[2] = true;
+				handleCollisions();
 				keyReady[2] = false;
 				cooldown[2] = cooldownLength;
 				//score += value;
@@ -86,6 +118,7 @@ function keyDownHandler(e) {
 		case 37:
 			if (cooldown[3] == 0 && keyReady[3]) {
 				buttonArr[3] = true;
+				handleCollisions();
 				keyReady[3] = false;
 				cooldown[3] = cooldownLength;
 				//score += value;
@@ -130,32 +163,42 @@ function keyUpHandler(e) {
 			break;
 	}
 }
-
-// hard coded for now
-//sideArr = [n, n, n, n];
-
-var orbs = [];
+// *** END INPUT HANDLING ***
 
 // collision check
 function handleCollisions() {
 
 	// placeholder: check if any orbs are colliding w/ the top red box
 	// need to make these boxes objects in the future
-	orbs.forEach(function(Orb) {
-		if (Orb.x > (x+radius-overlap) && Orb.x < (x+radius-overlap+rectWidth) && buttonArr[1]) {
-			score += value;
-			health += 50;
-			Orb.active = false;
-			collisions[1] = true;
+	rects.forEach(function(Rect) {
+
+		if (buttonArr[Rect.side] && keyReady[Rect.side]) {
+
+			// take a health penalty for each button press, but only if the player has enough health so this won't kill them
+			//if (health > (healthPenalty * 2)) {
+			//	health -= healthPenalty;
+			//}
+
+			orbs.forEach(function(Orb) {
+				
+					if ((Orb.x + (orbRadius / 2) < Rect.x + Rect.width) && (Orb.x + (orbRadius / 2) > Rect.x) && 
+						(Orb.y + (orbRadius / 2) < Rect.y + Rect.height) && (Orb.y + (orbRadius / 2) > Rect.y)) {
+						score += scoreIncr;
+						health += healthIncr;
+						Orb.active = false;
+						collisions[Rect.side] = true;
+					}
+				
+			});
 		}
 	});
 }
 
 
 // generic constructor for orb
-function Orb(x, y, dx, dy, color) {
-	this.x = x;
-	this.y = y;
+function Orb(xpos, ypos, dx, dy, color) {
+	this.x = xpos;
+	this.y = ypos;
 	this.dx = dx;
 	this.dy = dy;
 	this.color = color;
@@ -168,19 +211,40 @@ function Orb(x, y, dx, dy, color) {
 		this.y += this.dy;
 		// check to see if the orb is active
 		this.active = this.active && this.inbounds();
+
+		// remove health if
+		if (this.inbounds() == false) {
+			health -= healthPenalty;
+		}
 	};
 
-	// draw the orb
+	// draw the orb 
 	this.draw = function() {
 		drawOrb(this.x, this.y, this.color);
 	}
 
 	// check to see if the orb is inbounds
 	this.inbounds = function() {
-		var inb = (this.dy > 0 && this.y < colTop) || (this.dy < 0 && this.y > colBot) || (this.dx > 0 && this.x < colLeft) || (this.dx < 0 && this.x > colRight);
+		var inb = (this.dy > 0 && this.y < boundTop) || (this.dy < 0 && this.y > boundBot) || (this.dx > 0 && this.x < boundLeft) || (this.dx < 0 && this.x > boundRight);
 		console.log(inb);
 		return inb;
 	}
+}
+
+// constructor for rects of catcher...making these objects so we can run methods from them
+function Rect(xpos, ypos, width, height, color, side) {
+
+	this.x = xpos;
+	this.y = ypos;
+	this.width = width;
+	this.height = height;
+	this.color = color;
+	this.side = side;
+
+	this.draw = function() {
+		drawRect(this.x, this.y, this.width, this.height, this.color, this.side);
+	}
+
 }
 
 // main orb generation function
@@ -191,22 +255,22 @@ function orbGen(side) {
 	switch(side) {
 		case 0:
 			// top
-			temp = new Orb(x, 0, 0, delta, "red");
+			temp = new Orb(x, 0, 0, orbSpeed, "red");
 			orbs.push(temp);
 			break;
 		case 1:
 			// right
-			temp = new Orb(x*2, y, (delta * -1), 0, "blue");
+			temp = new Orb(x*2, y, (orbSpeed * -1), 0, "blue");
 			orbs.push(temp);
 			break;
 		case 2:
 			// bottom
-			temp = new Orb(x, y*2, 0, (delta * -1), "green");
+			temp = new Orb(x, y*2, 0, (orbSpeed * -1), "green");
 			orbs.push(temp);
 			break;
 		case 3:
 			// left
-			temp = new Orb(0, y, delta, 0, "yellow");
+			temp = new Orb(0, y, orbSpeed, 0, "yellow");
 			orbs.push(temp);
 			break;
 		default:
@@ -232,10 +296,20 @@ function draw() {
 		side = Math.floor(Math.random() * 4);
 		orbGen(side);
 
-		frameCounter = 25;
+		BPM++;
+		frameCounter = calcFramesPerBeat(FPS, BPM);
 	}
 
-	drawCatcher();
+	drawTrack(0, y - (rectHeight / 2), x, rectHeight, 3);
+	drawTrack(x - (rectHeight / 2), 0, rectHeight, y, 0);
+	drawTrack(x, y - (rectHeight / 2), x, rectHeight, 1);
+	drawTrack(x - (rectHeight / 2), y, rectHeight, y, 2);
+
+	// draw the squares
+	rects.forEach(function(Rect) {
+
+		Rect.draw();
+	});
 
 	// update each orb
 	orbs.forEach(function(Orb) {
@@ -244,12 +318,15 @@ function draw() {
 		Orb.draw();
 	});
 
+	// draw the circle and its animations
+	drawCatcher();
+
 	// filter out inactive orbs
 	orbs = orbs.filter(function(Orb) {
 		return Orb.active;
 	});
 
-	handleCollisions();
+	//handleCollisions();
 
 	// decrement cooldown
 	var i = 0;

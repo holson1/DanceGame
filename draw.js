@@ -1,8 +1,79 @@
 // draw functions go here
 
+// generic square-drawing function
+function drawRect(xpos, ypos, width, height, color, side) {
+
+	ctx.beginPath();
+	ctx.rect(xpos, ypos, width, height);
+	ctx.strokeStyle = color;
+	ctx.lineWidth = 2;
+	ctx.stroke();
+	if (buttonArr[side] && cooldown[side] > 0) {
+		ctx.fillStyle = color;
+		ctx.fill();
+	}
+	ctx.closePath();
+
+	// square animation
+	/*
+	if (cooldown[side] > 0 && collisions[side]) {
+		var factor = 0.8 + (1/cooldown[side]);
+		ctx.beginPath();
+		ctx.rect(xpos, ypos, width, height*factor);
+		ctx.strokeStyle = color;
+		ctx.lineWidth = 2;
+		ctx.stroke();
+		ctx.fillStyle = color;
+		ctx.fill();
+		ctx.closePath();
+	}
+	*/
+}
+
+function drawTrack(xpos, ypos, width, height, side) {
+
+	var grd=ctx.createLinearGradient(0,0,200,0);
+	grd.addColorStop(0,"gray");
+	grd.addColorStop(1,"white");
+	ctx.beginPath();
+	ctx.rect(xpos, ypos, width, height);
+	ctx.strokeStyle = grd;
+	// we can use this code for a new animation
+	
+	if (cooldown[side] > 0 && collisions[side]) {
+		ctx.fillStyle = "rgba(255,255,255,0.2)";
+		ctx.fill();
+	}
+	ctx.lineWidth = 0.2;
+	ctx.stroke();
+
+	/*
+	for (i=1; i<beatsToCenter; i++) {
+
+		// draw beat marks
+		if (side == 3) {
+			ctx.beginPath();
+			ctx.rect(xpos, ypos, (distancePerBeat * i), height);
+			ctx.strokeStyle = grd;
+			ctx.lineWidth = 0.2;
+			ctx.stroke();
+		}
+
+		if (side == 0) {
+			ctx.beginPath();
+			ctx.rect(xpos, ypos, width, (distancePerBeat * i));
+			ctx.strokeStyle = grd;
+			ctx.lineWidth = 0.2;
+			ctx.stroke();
+		}
+	}
+	*/
+}
+
 // draw the catcher
 function drawCatcher() {
 
+	/*
 	// right rect
 	ctx.beginPath();
 	ctx.rect(x + radius - overlap, y - (rectHeight/2), rectWidth, rectHeight);
@@ -42,6 +113,7 @@ function drawCatcher() {
 		ctx.fill();
 	}
 	ctx.closePath();
+	*/
 
 	// square animation
 	/*
@@ -60,6 +132,7 @@ function drawCatcher() {
 	*/
 
 	// left rect
+	/*
 	ctx.beginPath();
 	ctx.rect(x - radius - rectWidth + overlap, y - (rectHeight/2), rectWidth, rectHeight);
 	ctx.strokeStyle = "yellow";
@@ -70,6 +143,7 @@ function drawCatcher() {
 		ctx.fill();
 	}
 	ctx.closePath();
+	*/
 
 	// square animation
 	/*
@@ -88,6 +162,7 @@ function drawCatcher() {
 	*/
 
 	// top rect
+	/*
 	ctx.beginPath();
 	ctx.rect(x - (rectHeight/2), y - radius - rectWidth + overlap, rectHeight, rectWidth);
 	ctx.strokeStyle = "red";
@@ -98,6 +173,7 @@ function drawCatcher() {
 		ctx.fill();
 	}
 	ctx.closePath();
+	*/
 
 	// square animation
 	/*
