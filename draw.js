@@ -197,17 +197,19 @@ function drawCatcher() {
 	ctx.strokeStyle = "white";
 	ctx.lineWidth = 2;
 	ctx.stroke();
-	if (/*buttonArr[4] && */cooldown[4] > 0) {
-		ctx.fillStyle = "white";
-	}
-	else {
+	//if (/*buttonArr[4] && */cooldown[4] > 0) {
+	//	ctx.fillStyle = "white";
+	//}
+	//else {
 		ctx.fillStyle = "black";
-	}
+	//}
 	ctx.fill();
 	ctx.closePath();
 
+
 	// just a fun animation test
 	// just kidding, this is awesome! animation for the super power
+	/*
 	if (cooldown[4] > 0) {
 		var factor = 1 + (((70-radius) / 10)/cooldown[4]);
 		ctx.beginPath();
@@ -216,7 +218,7 @@ function drawCatcher() {
 		ctx.lineWidth = 3;
 		ctx.stroke();
 		ctx.closePath();
-	}
+	}*/
 
 
 }
@@ -230,6 +232,7 @@ function drawScore() {
 	ctx.fill();
 	ctx.closePath();
 
+
 	var scoreString = score + "";
 	while(scoreString.length < 8) {
 		scoreString = " " + scoreString;
@@ -239,17 +242,69 @@ function drawScore() {
 	var scoreY = 30;
 
 	ctx.font = "30px Courier";
-	ctx.strokeStyle = "white";
-	for(i=0; i<6; i++) {
-		if(cooldown[i] > 0) {
-			ctx.font = "30px Courier";
+	ctx.fillStyle = "white";
+	//for(i=0; i<6; i++) {
+	//	if(cooldown[i] > 0) {
+	//		ctx.font = "30px Courier";
 			//ctx.strokeStyle = "#1EF9FC";
 			//scoreX-=2;
 			//scoreY--;
-		}
-	}
+	//	}
+	//}
 	
-	ctx.strokeText(scoreString, scoreX, scoreY);
+	ctx.fillText(scoreString, scoreX, scoreY);
+}
+
+function drawCombo(combo) {
+
+	ctx.font = "30px Courier";
+	ctx.fillStyle = "white";
+
+	var comboString = combo + "";
+
+	ctx.fillText(comboString, 35 - ((comboString.length - 1) * 5), 100);
+
+	ctx.fillText("COMBO!", 0, 130);
+
+}
+
+function drawGameOver() {
+
+	var gameOverTextX = 50;
+	var gameOverTextY = 200;
+
+	ctx.font = "80px Courier";
+	ctx.fillStyle = "rgb(255,255,255)";
+	ctx.fillText("GAME OVER", gameOverTextX, gameOverTextY);
+
+	ctx.font = "20px Courier";
+	ctx.fillText("Press <space> to play again.", 100, 250);
+}
+
+function deathAnimation(timer) {
+	drawTrack(0, y - (rectHeight / 2), x, rectHeight, 3);
+	drawTrack(x - (rectHeight / 2), 0, rectHeight, y, 0);
+	drawTrack(x, y - (rectHeight / 2), x, rectHeight, 1);
+	drawTrack(x - (rectHeight / 2), y, rectHeight, y, 2);
+
+	// draw the squares
+	rects.forEach(function(Rect) {
+
+		Rect.draw();
+	});
+	drawCatcher();
+
+	deathColor = "rgba(255, 255, 0, 0.5)";
+	if (timer % 2 == 0) {
+		deathColor = "rgba(255, 0, 0, 0.5)";
+	}
+
+	ctx.beginPath();
+	//ctx.rect(0, 0, 530, 530);
+	ctx.arc(x, y, radius * (10 - (timer % 10)), 0, Math.PI*2, false);
+	ctx.fillStyle = deathColor;
+	ctx.fill();
+	ctx.closePath();
 }
 
 function drawHealth() {

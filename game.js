@@ -1,6 +1,12 @@
+// SwapStepper (tempName)
+// Copyright Henry Olson 2016
+
 // get the canvas
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
+
+// game variables
+var state = "start";
 
 // timing vars
 var FPS = 50;
@@ -17,13 +23,19 @@ function calcFramesPerBeat(FPS, BPM) {
 	return Math.ceil(FPS / BPS);
 }
 
+// animation timers
+death_animT = 0;
+
 // score vars
 var health = 700;
 var score = 0;
+var combo = 0;
+var longestCombo = 0;
+var multiplier = 0;
 var special = 0;
 var scoreIncr = 100;
 var healthIncr = 40;
-var healthPenalty = 20;
+var healthPenalty = 15;
 var r = 0;
 var g = 255;
 var b = 255; 
@@ -174,22 +186,28 @@ function handleCollisions() {
 
 		if (buttonArr[Rect.side] && keyReady[Rect.side]) {
 
-			// take a health penalty for each button press, but only if the player has enough health so this won't kill them
-			//if (health > (healthPenalty * 2)) {
-			//	health -= healthPenalty;
-			//}
+			hitOrb = false;
 
 			orbs.forEach(function(Orb) {
 				
-					if ((Orb.x + (orbRadius / 2) < Rect.x + Rect.width) && (Orb.x + (orbRadius / 2) > Rect.x) && 
-						(Orb.y + (orbRadius / 2) < Rect.y + Rect.height) && (Orb.y + (orbRadius / 2) > Rect.y)) {
+					/*if ((Orb.x + (orbRadius / 2) < Rect.x + Rect.width) && (Orb.x + (orbRadius / 2) > Rect.x) && 
+						(Orb.y + (orbRadius / 2) < Rect.y + Rect.height) && (Orb.y + (orbRadius / 2) > Rect.y)) {*/
+					if ((Orb.x < Rect.x + Rect.width) && ((Orb.x + orbRadius) > Rect.x) && 
+						(Orb.y < Rect.y + Rect.height) && ((Orb.y + orbRadius) > Rect.y)) {
 						score += scoreIncr;
 						health += healthIncr;
+						combo += 1;
 						Orb.active = false;
 						collisions[Rect.side] = true;
+						hitOrb = true;
 					}
 				
 			});
+
+			// take a health penalty for each missed button press
+			if (hitOrb == false) {
+				health -= healthPenalty;
+			}
 		}
 	});
 }
@@ -215,6 +233,7 @@ function Orb(xpos, ypos, dx, dy, color) {
 		// remove health if
 		if (this.inbounds() == false) {
 			health -= healthPenalty;
+			combo = 0;
 		}
 	};
 
@@ -280,10 +299,44 @@ function orbGen(side) {
 }
 
 // main draw loop
-function draw() {
+function main() {
 
 	// clear screen
 	ctx.clearRect(0,0, canvas.width, canvas.height);
+
+	// check for state == start
+	if (state == "start") {
+		health = 700;
+		score = 0;
+		combo = 0;
+		longestCombo = 0;
+		multiplier = 0;
+		BPM = 100;
+		state = "playing";
+		return;
+	}
+
+	// check for state == gameover
+	if (state == "gameover") {
+		orbs = [];
+		drawScore();
+
+		// dying animation...
+		if (death_animT > 0) {
+
+			deathAnimation(death_animT);
+			death_animT--;
+			return;
+		}
+
+		drawGameOver();
+		
+		// restart
+		if (buttonArr[4]) {
+			state = "start";
+		}
+		return;
+	}
 
 	// update frameCounter
 	frameCounter--;
@@ -340,17 +393,28 @@ function draw() {
 		}
 	}
 
+
 	health--;
 
 	if (health < 0) {
 		health = 0;
 	}
+
+	if (health == 0) {
+		state = "gameover";
+		death_animT = 50;
+	}
+
 	if (health > 1100) {
 		health = 1100;
 	}
 
 	drawScore();
 	drawHealth();
+
+	if (combo > 1) {
+		drawCombo(combo);
+	}
 }
 
-setInterval(draw, 1000/FPS);
+setInterval(main, 1000/FPS);
