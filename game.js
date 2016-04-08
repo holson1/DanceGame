@@ -11,17 +11,26 @@ var state = "start";
 // timing vars
 var FPS = 50;
 // starting BPM, will change eventually
-var BPM = 100;
+var BPM = 120;
 var BPS = (BPM / 60);
 // we always want a whole number closest to our BPM so that we can decrement it properly
-var framesPerBeat = Math.ceil(FPS / BPS);
+function calcFramesPerBeat(FPS, BPM) {
+	var BPS = BPM / 60;
+	fpb = Math.ceil(FPS / BPS);
+
+	// always return an even number so we can play the bass on the midpoint
+	if (fpb % 2 != 0) {
+		fpb++;
+	}
+
+	return fpb;
+}
+var framesPerBeat = calcFramesPerBeat(FPS, BPM);
+//var framesPerBeat = Math.ceil(FPS / BPS);
+//console.log(framesPerBeat);
 // frames/beat
 var frameCounter = framesPerBeat;
 
-function calcFramesPerBeat(FPS, BPM) {
-	var BPS = BPM / 60;
-	return Math.ceil(FPS / BPS);
-}
 
 // animation timers
 death_animT = 0;
@@ -44,18 +53,18 @@ var b = 255;
 var x = 265;
 var y = 265;
 var radius = 30;
-var rectHeight = 30;
-var rectWidth = 24;
+var rectHeight = 35; //30
+var rectWidth = 28; // 24
 var overlap = 6;
 
 // orb vars
 var orbRadius = 6;
 
 // calculate orbSpeed based on BPM
-var distanceToRectCenter = x - radius - (rectWidth / 2) + overlap;
+var distanceToRectCenter = x - radius - (rectWidth / 2) + (overlap/2);
 // this could be a factor of BPM...the higher the BPM the faster the orb should move
-//var beatsToCenter = 2;
-var beatsToCenter = 200/BPM;
+var beatsToCenter = 2;
+//var beatsToCenter = 200/BPM;
 
 var distancePerBeat = distanceToRectCenter / beatsToCenter;
 //var orbSpeed = 2;
@@ -245,7 +254,7 @@ function Orb(xpos, ypos, dx, dy, color) {
 	// check to see if the orb is inbounds
 	this.inbounds = function() {
 		var inb = (this.dy > 0 && this.y < boundTop) || (this.dy < 0 && this.y > boundBot) || (this.dx > 0 && this.x < boundLeft) || (this.dx < 0 && this.x > boundRight);
-		console.log(inb);
+		//console.log(inb);
 		return inb;
 	}
 }
@@ -298,6 +307,11 @@ function orbGen(side) {
 	}
 }
 
+// game over sound controller
+var gameOverSound = true;
+// pad sound controller
+var padSoundDelay = frameCounter * 16;
+
 // main draw loop
 function main() {
 
@@ -311,8 +325,13 @@ function main() {
 		combo = 0;
 		longestCombo = 0;
 		multiplier = 0;
-		BPM = 100;
-		state = "playing";
+		//BPM = BPM;
+		gameOverSound = true;
+
+		//if (buttonArr[4]) {
+			state = "playing";
+		//}
+		
 		return;
 	}
 
@@ -321,6 +340,10 @@ function main() {
 		orbs = [];
 		drawScore();
 
+		if (gameOverSound) {
+			//playSound("explosion");
+			gameOverSound = false;
+		}
 		// dying animation...
 		if (death_animT > 0) {
 
@@ -343,14 +366,27 @@ function main() {
 	// we have struck a beat
 	if (frameCounter == 0) {
 
-		//console.log("nts");
+		// play our sound
+		playSound("bassDrum");
 
 		// random side chooser
 		side = Math.floor(Math.random() * 4);
 		orbGen(side);
 
-		BPM++;
+		//BPM++;
 		frameCounter = calcFramesPerBeat(FPS, BPM);
+		//console.log(frameCounter);
+	}
+	else if (frameCounter == calcFramesPerBeat(FPS, BPM)/2) {
+		playSound("bass");
+	}
+
+	padSoundDelay--;
+	if (padSoundDelay == 0) {
+
+		playSound("pad");
+
+		padSoundDelay = calcFramesPerBeat(FPS, BPM) * 64;
 	}
 
 	drawTrack(0, y - (rectHeight / 2), x, rectHeight, 3);
