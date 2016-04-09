@@ -6,8 +6,9 @@
 var soundArr = {"bassDrum":"./assets/sounds/kick_drum.ogg",
 				"shot":"./assets/sounds/Game-Shot.ogg",
 				"bass":"./assets/sounds/bass.ogg",
-				"explosion":"./assets/sounds/explosion.ogg",
-				"pad":"./assets/sounds/110212__bluebloomers__pad-1.ogg"};
+				/*"explosion":"./assets/sounds/explosion.ogg",
+				"pad":"./assets/sounds/110212__bluebloomers__pad-1.ogg",*/
+                "120BPM":"./assets/sounds/120 Default - 4-9-16, 12.55 PM.ogg"};
 
 // load all the sounds we might want to use
 function loadSounds () {
@@ -23,5 +24,6 @@ function loadSounds () {
 // play a single sound
 function playSound (soundID) {
 
-	createjs.Sound.play(soundID);
+	sound = createjs.Sound.play(soundID);
+    return sound;
 }

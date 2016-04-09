@@ -9,7 +9,7 @@ var ctx = canvas.getContext("2d");
 var state = "start";
 
 // timing vars
-var FPS = 50;
+var FPS = 60;
 // starting BPM, will change eventually
 var BPM = 120;
 var BPS = (BPM / 60);
@@ -18,19 +18,13 @@ function calcFramesPerBeat(FPS, BPM) {
 	var BPS = BPM / 60;
 	fpb = Math.ceil(FPS / BPS);
 
-	// always return an even number so we can play the bass on the midpoint
-	if (fpb % 2 != 0) {
-		fpb++;
-	}
-
 	return fpb;
 }
 var framesPerBeat = calcFramesPerBeat(FPS, BPM);
 //var framesPerBeat = Math.ceil(FPS / BPS);
-//console.log(framesPerBeat);
+console.log(framesPerBeat);
 // frames/beat
 var frameCounter = framesPerBeat;
-
 
 // animation timers
 death_animT = 0;
@@ -275,6 +269,36 @@ function Rect(xpos, ypos, width, height, color, side) {
 
 }
 
+// constructor for a chartReader
+function ChartReader() {
+    
+    this.chart = new Array();
+    
+    // load a new chart into the reader
+    this.load = function(newChart) {
+        this.chart = newChart;
+    }
+    
+    // read a line from the chart
+    this.read = function() {
+        
+        if (this.chart.length == 0) {
+            return;
+        }
+        
+        line = this.chart.shift();
+        
+        //console.log(line);
+        
+        for (i = 0; i < line.length; i++) {
+            if(line[i] > 0) {
+                orbGen(i);
+            }
+        }
+    }
+    
+}
+
 // main orb generation function
 // args
 // side: a number which corresponds to the side to generate the orb at
@@ -311,14 +335,48 @@ function orbGen(side) {
 var gameOverSound = true;
 // pad sound controller
 var padSoundDelay = frameCounter * 16;
+// music controller
+var musicPlaying = false;
+
+// a chart reader
+mainChartReader = new ChartReader();
+
+// a sample chart...
+sampChart = [   [0,0,0,0],
+                [0,0,0,0],
+                [0,0,0,0],
+                [0,0,0,0]   
+            ];
+            
+// load the sample chart
+mainChartReader.load(sampChart);
+
+//console.log(mainChartReader.chart);
+
+var mySong;
+// load the sounds
+loadSounds();
+
+// audio sync shit
+var startTime = 0;
+var songTime = 0;
+var previousFrameTime = new Date().getTime();
+var currentFrameTime = 0;
+var ms = 0;
 
 // main draw loop
 function main() {
 
+    // check milliseconds passed in between each frameCounter
+    currentFrameTime = new Date().getTime();
+    ms = currentFrameTime - previousFrameTime;
+    //console.log(ms);
+    previousFrameTime = new Date().getTime();
+
 	// clear screen
 	ctx.clearRect(0,0, canvas.width, canvas.height);
 
-	// check for state == start
+	// *** START ***
 	if (state == "start") {
 		health = 700;
 		score = 0;
@@ -328,14 +386,15 @@ function main() {
 		//BPM = BPM;
 		gameOverSound = true;
 
-		//if (buttonArr[4]) {
+		if (buttonArr[4]) {
 			state = "playing";
-		//}
+		}
 		
 		return;
 	}
+    // *** END START ***
 
-	// check for state == gameover
+	// *** GAME OVER ***
 	if (state == "gameover") {
 		orbs = [];
 		drawScore();
@@ -360,6 +419,24 @@ function main() {
 		}
 		return;
 	}
+    // *** END GAME OVER ***
+
+
+    // *** PLAYING ***
+
+    // play music
+    if (musicPlaying == false) {
+        console.log("hey");
+        mySong = playSound("120BPM");
+        musicPlaying = true;
+        startTime = new Date().getTime();
+    }
+
+    songTime = new Date().getTime() - startTime;
+
+    console.log("songPosition = " + mySong.position);
+    console.log("songTime = " + songTime);
+
 
 	// update frameCounter
 	frameCounter--;
@@ -367,24 +444,27 @@ function main() {
 	if (frameCounter == 0) {
 
 		// play our sound
-		playSound("bassDrum");
+		//playSound("bassDrum");
 
-		// random side chooser
+		// random side chooser - to replace w/ generate charts for more variety
 		side = Math.floor(Math.random() * 4);
 		orbGen(side);
-
+        
 		//BPM++;
 		frameCounter = calcFramesPerBeat(FPS, BPM);
 		//console.log(frameCounter);
 	}
 	else if (frameCounter == calcFramesPerBeat(FPS, BPM)/2) {
-		playSound("bass");
+		//playSound("bass");
 	}
+
+    //mainChartReader.read();
+
 
 	padSoundDelay--;
 	if (padSoundDelay == 0) {
 
-		playSound("pad");
+		//playSound("pad");
 
 		padSoundDelay = calcFramesPerBeat(FPS, BPM) * 64;
 	}
