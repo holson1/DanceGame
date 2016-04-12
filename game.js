@@ -363,6 +363,13 @@ var songTime = 0;
 var previousFrameTime = new Date().getTime();
 var currentFrameTime = 0;
 var ms = 0;
+var lastReportedPlayheadPosition = 0;
+
+var avgDiff = 0;
+var diffCounter = 1;
+
+var songTimeWeight = 1.0;
+var songPositionWeight = 1.0;
 
 // main draw loop
 function main() {
@@ -424,25 +431,70 @@ function main() {
 
     // *** PLAYING ***
 
+    // MUSIC AND SYNCHRONIZATION
     // play music
     if (musicPlaying == false) {
-        console.log("hey");
+        
+        console.log("playing music");
+        startTime = new Date().getTime();
+        lastReportedPlayheadPosition = 0;
         mySong = playSound("120BPM");
         musicPlaying = true;
-        startTime = new Date().getTime();
     }
 
-    songTime = new Date().getTime() - startTime;
-
+    // wait for song to actually start before recording song time
+    if (mySong.position > 0) {
+        songTime = new Date().getTime() - startTime;
+    }
+    else {
+        startTime = new Date().getTime();
+    }
+    
+    console.log("****************************");
+    console.log("songTime before avg = " + songTime);
+    
+    //framesBetweenPlayheadUpdate++;
+    
+    // easing algorithm to keep song time (relatively) in sync with reported audio playhead
+    if (mySong.position != lastReportedPlayheadPosition) {
+        
+        songTime = ((songTime * songTimeWeight) + (mySong.position * songPositionWeight)) / 2;
+       
+    }
+    
     console.log("songPosition = " + mySong.position);
     console.log("songTime = " + songTime);
-
+    console.log("diff = " + (songTime - mySong.position));
+    avgDiff = ((avgDiff * diffCounter) + (songTime - mySong.position)) / (diffCounter + 1);
+    
+    if (mySong.position > 0) {
+        diffCounter++;
+    }
+    console.log("avgDiff = " + avgDiff);
+    
+    // weight the value of the songTime and songPosition variables in the average to pull them 
+    // as closely into sync as possible
+    if ((songTime - mySong.position) < 0 && avgDiff < -1) {
+        songTimeWeight -= 0.01;
+        songPositionWeight += 0.01;
+    }
+    else if ((songTime - mySong.position) > 0 && avgDiff > 1) {
+        songPositionWeight -= 0.01;
+        songTimeWeight += 0.01;
+    }
+    
+    
 
 	// update frameCounter
 	frameCounter--;
+    
+    // TEST: rather than using a frameCounter, let's try measuring the beats by millisecond value and use song time to fire them
 	// we have struck a beat
-	if (frameCounter == 0) {
+	//if (frameCounter == 0) {
+    // 500 ms per beat at 120 BPM... if our songTime is within this range it's time to strike a beat
+    if ((songTime % 500 <= 6 || 500 - (songTime % 500) <= 6) && songTime > 0)  {
 
+        console.log("playing a beat, songTime = " + songTime);
 		// play our sound
 		//playSound("bassDrum");
 
