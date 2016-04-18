@@ -42,6 +42,11 @@ function drawTrack(xpos, ypos, width, height, side) {
 	
 	if (cooldown[side] > 0 && collisions[side]) {
 		ctx.fillStyle = "rgba(255,255,255,0.2)";
+		// rgb(255,255,255);
+		//trackFillColor = "rgba" + rects[side].color.substring(3,15) + ",0.2)";
+		//console.log(trackFillColor);
+		//trackFillColor = "rgba(255,255,0,0.2)";
+		//ctx.fillStyle = trackFillColor;
 		ctx.fill();
 	}
 	ctx.lineWidth = 0.2;
@@ -73,124 +78,6 @@ function drawTrack(xpos, ypos, width, height, side) {
 // draw the catcher
 function drawCatcher() {
 
-	/*
-	// right rect
-	ctx.beginPath();
-	ctx.rect(x + radius - overlap, y - (rectHeight/2), rectWidth, rectHeight);
-	ctx.strokeStyle = "blue";
-	ctx.lineWidth = 2;
-	ctx.stroke();
-	if (buttonArr[1] && cooldown[1] > 0) {
-		ctx.fillStyle = "blue";
-		ctx.fill();
-	}
-	ctx.closePath();
-
-	// square animation
-	
-	if (cooldown[1] > 0 && collisions[1]) {
-		var factor = 0.8 + (1/cooldown[1]);
-		ctx.beginPath();
-		//ctx.rect(x + radius - overlap, y - ((rectHeight*factor)/2), rectWidth*factor, rectHeight*factor);
-		ctx.rect(x + radius - overlap, y - ((rectHeight*factor)/2), rectWidth*factor, rectHeight*factor);
-		ctx.strokeStyle = "blue";
-		ctx.lineWidth = 2;
-		ctx.stroke();
-		ctx.fillStyle = "blue";
-		ctx.fill();
-		ctx.closePath();
-	}
-	
-
-	// bottom rect
-	ctx.beginPath();
-	ctx.rect(x - (rectHeight/2), y + radius - overlap, rectHeight, rectWidth);
-	ctx.strokeStyle = "green";
-	ctx.lineWidth = 2;
-	ctx.stroke();
-	if (buttonArr[2] && cooldown[2] > 0) {
-		ctx.fillStyle = "green";
-		ctx.fill();
-	}
-	ctx.closePath();
-	*/
-
-	// square animation
-	/*
-	if (cooldown[2] > 0) {
-		var factor = 0.8 + (1/cooldown[2]);
-		ctx.beginPath();
-		//ctx.rect(x + radius - overlap, y - ((rectHeight*factor)/2), rectWidth*factor, rectHeight*factor);
-		ctx.rect(x - ((rectHeight*factor)/2), y + radius - overlap, rectHeight*factor, rectWidth*factor);
-		ctx.strokeStyle = "green";
-		ctx.lineWidth = 2;
-		ctx.stroke();
-		ctx.fillStyle = "green";
-		ctx.fill();
-		ctx.closePath();
-	}
-	*/
-
-	// left rect
-	/*
-	ctx.beginPath();
-	ctx.rect(x - radius - rectWidth + overlap, y - (rectHeight/2), rectWidth, rectHeight);
-	ctx.strokeStyle = "yellow";
-	ctx.lineWidth = 2;
-	ctx.stroke();
-	if (buttonArr[3] && cooldown[3] > 0) {
-		ctx.fillStyle = "yellow";
-		ctx.fill();
-	}
-	ctx.closePath();
-	*/
-
-	// square animation
-	/*
-	if (cooldown[3] > 0) {
-		var factor = 0.8 + (1/cooldown[3]);
-		ctx.beginPath();
-		//ctx.rect(x + radius - overlap, y - ((rectHeight*factor)/2), rectWidth*factor, rectHeight*factor);
-		ctx.rect(x - radius - (rectWidth*factor) + overlap, y - ((rectHeight*factor)/2), rectWidth*factor, rectHeight*factor);
-		ctx.strokeStyle = "yellow";
-		ctx.lineWidth = 2;
-		ctx.stroke();
-		ctx.fillStyle = "yellow";
-		ctx.fill();
-		ctx.closePath();
-	}
-	*/
-
-	// top rect
-	/*
-	ctx.beginPath();
-	ctx.rect(x - (rectHeight/2), y - radius - rectWidth + overlap, rectHeight, rectWidth);
-	ctx.strokeStyle = "red";
-	ctx.lineWidth = 2;
-	ctx.stroke();
-	if (buttonArr[0] && cooldown[0] > 0) {
-		ctx.fillStyle = "red";
-		ctx.fill();
-	}
-	ctx.closePath();
-	*/
-
-	// square animation
-	/*
-	if (cooldown[0] > 0) {
-		var factor = 0.8 + (1/cooldown[0]);
-		ctx.beginPath();
-		//ctx.rect(x + radius - overlap, y - ((rectHeight*factor)/2), rectWidth*factor, rectHeight*factor);
-		ctx.rect(x - ((rectHeight*factor)/2), y - radius - (rectWidth*factor) + overlap, rectHeight*factor, rectWidth*factor);
-		ctx.strokeStyle = "red";
-		ctx.lineWidth = 2;
-		ctx.stroke();
-		ctx.fillStyle = "red";
-		ctx.fill();
-		ctx.closePath();
-	}
-	*/
-
 	// circle
 	ctx.beginPath();
 	ctx.arc(x, y, radius, 0, Math.PI*2, false);
@@ -219,8 +106,6 @@ function drawCatcher() {
 		ctx.stroke();
 		ctx.closePath();
 	}*/
-
-
 }
 
 // draw the score
@@ -279,6 +164,29 @@ function drawGameOver() {
 
 	ctx.font = "20px Courier";
 	ctx.fillText("Press <space> to play again.", 100, 250);
+}
+
+function drawTitle() {
+
+	var titleTextX = 70;
+	var titleTextY = 100;
+
+	ctx.font = "60px Courier";
+	ctx.fillStyle = "rgb(255,255,255)";
+	ctx.fillText("SwapStepper", titleTextX, titleTextY);
+
+	
+
+	ctx.font = "20px Courier";
+	ctx.fillText("Press <space> to play!", 140, 450);
+	ctx.font = "10px Courier";
+	ctx.fillText("Copyright Henry Olson 2016", 185, 500);
+	
+	rects.forEach(function(Rect) {
+			
+		Rect.draw();
+	});
+	drawCatcher();
 }
 
 function deathAnimation(timer) {

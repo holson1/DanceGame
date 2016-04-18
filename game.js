@@ -87,10 +87,10 @@ var orbs = [];
 var rects = [];
 
 // add squares
-rects.push(new Rect(x - (rectHeight/2), y - radius - rectWidth + overlap, rectHeight, rectWidth, "red", 0));
-rects.push(new Rect(x + radius - overlap, y - (rectHeight/2), rectWidth, rectHeight, "blue", 1));
-rects.push(new Rect(x - (rectHeight/2), y + radius - overlap, rectHeight, rectWidth, "green", 2));
-rects.push(new Rect(x - radius - rectWidth + overlap, y - (rectHeight/2), rectWidth, rectHeight, "yellow", 3));
+rects.push(new Rect(x - (rectHeight/2), y - radius - rectWidth + overlap, rectHeight, rectWidth, "rgb(255,000,000)", 0));
+rects.push(new Rect(x + radius - overlap, y - (rectHeight/2), rectWidth, rectHeight, "rgb(000,000,255)", 1));
+rects.push(new Rect(x - (rectHeight/2), y + radius - overlap, rectHeight, rectWidth, "rgb(000,144,000)", 2));
+rects.push(new Rect(x - radius - rectWidth + overlap, y - (rectHeight/2), rectWidth, rectHeight, "rgb(255,255,000)", 3));
 
 
 // *** INPUT HANDLING ***
@@ -101,47 +101,43 @@ function keyDownHandler(e) {
 	switch (e.keyCode) {
 		case 39:
 			if (cooldown[1] == 0 && keyReady[1]) {
+				
 				buttonArr[1] = true;
-				// this is a little hacky, we should really integrate the inputHandling into the game loop
 				handleCollisions();
 				keyReady[1] = false;
 				cooldown[1] = cooldownLength;
-				//score += value;
-				//health += 50;
 			}
 			break;
 		case 38:
 			if (cooldown[0] == 0 && keyReady[0]) {
+				
 				buttonArr[0] = true;
 				handleCollisions();
 				keyReady[0] = false;
 				cooldown[0] = cooldownLength;
-				//score += value;
-				//health += 50;
 			}
 			break;
 		case 40:
 			if (cooldown[2] == 0 && keyReady[2]) {
+				
 				buttonArr[2] = true;
 				handleCollisions();
 				keyReady[2] = false;
 				cooldown[2] = cooldownLength;
-				//score += value;
-				//health += 50;
 			}
 			break;
 		case 37:
 			if (cooldown[3] == 0 && keyReady[3]) {
+				
 				buttonArr[3] = true;
 				handleCollisions();
 				keyReady[3] = false;
 				cooldown[3] = cooldownLength;
-				//score += value;
-				//health += 50;
 			}
 			break;
 		case 32:
 			if (cooldown[4] == 0 && keyReady[4]) {
+				
 				buttonArr[4] = true;
 				keyReady[4] = false;
 				cooldown[4] = 100;
@@ -183,8 +179,6 @@ function keyUpHandler(e) {
 // collision check
 function handleCollisions() {
 
-	// placeholder: check if any orbs are colliding w/ the top red box
-	// need to make these boxes objects in the future
 	rects.forEach(function(Rect) {
 
 		if (buttonArr[Rect.side] && keyReady[Rect.side]) {
@@ -280,24 +274,67 @@ function ChartReader() {
     }
     
     // read a line from the chart
-    this.read = function() {
+    this.read = function(songMS) {
         
         if (this.chart.length == 0) {
+
+			//this.load(ChartGenerator(120, songMS, 0));
             return;
         }
         
-        line = this.chart.shift();
-        
-        //console.log(line);
-        
-        for (i = 0; i < line.length; i++) {
-            if(line[i] > 0) {
-                orbGen(i);
-            }
-        }
-    }
-    
+		line = this.chart[0];
+		var noteArrivalTime = line[0];
+		var noteCreationTime = noteArrivalTime - 500;
+		//console.log(noteCreationTime);
+		//console.log(songMS);
+		
+		// if we're ready to create a note...
+		if ((noteCreationTime - songMS < 15 && noteCreationTime - songMS > -15) && songMS > 0) {
+			
+			//console.log("ok");
+			for (i = 1; i < line.length; i++) {
+				if(line[i] > 0) {
+					orbGen(i-1);
+				}
+        	}
+			
+			this.chart.shift();
+		}
+		else if(noteCreationTime - songMS < -15 && songMS > 0) {
+			console.log("falls outside of region");
+			this.chart.shift();
+		}
+    } 
 }
+
+// generate a chart in real time :O
+function ChartGenerator(myBPM, songMS, startTime) {
+	
+	genChart = new Array();
+	
+	// get ms for every beat
+	myBPS = myBPM/60;
+	msPerBeat = 1000/myBPS;
+	
+	// next beat
+	console.log(songMS);
+	console.log(songMS % msPerBeat)
+	chartBegin = songMS + (msPerBeat - (songMS % msPerBeat));
+	
+	chartLength = 16;
+	for (k = 0; k < chartLength; k++) {
+		
+		// four on the floor standard
+		line = [chartBegin, 1, 0, 0 ,0];
+		console.log(line);
+		genChart.push(line);
+		
+		chartBegin += msPerBeat;
+		
+	}
+	return genChart;
+}
+
 
 // main orb generation function
 // args
@@ -307,22 +344,22 @@ function orbGen(side) {
 	switch(side) {
 		case 0:
 			// top
-			temp = new Orb(x, 0, 0, orbSpeed, "red");
+			temp = new Orb(x, 0, 0, orbSpeed, "rgb(255,0,0)");
 			orbs.push(temp);
 			break;
 		case 1:
 			// right
-			temp = new Orb(x*2, y, (orbSpeed * -1), 0, "blue");
+			temp = new Orb(x*2, y, (orbSpeed * -1), 0, "rgb(0,0,255)");
 			orbs.push(temp);
 			break;
 		case 2:
 			// bottom
-			temp = new Orb(x, y*2, 0, (orbSpeed * -1), "green");
+			temp = new Orb(x, y*2, 0, (orbSpeed * -1), "rgb(0,144,0)");
 			orbs.push(temp);
 			break;
 		case 3:
 			// left
-			temp = new Orb(0, y, orbSpeed, 0, "yellow");
+			temp = new Orb(0, y, orbSpeed, 0, "rgb(255,255,0)");
 			orbs.push(temp);
 			break;
 		default:
@@ -331,10 +368,19 @@ function orbGen(side) {
 	}
 }
 
+function debug() {
+	
+	console.log("****************************");
+	console.log("prevSongTime = " + prevSongTime);
+    console.log("songTime before avg = " + pureSongTime);
+    console.log("songPosition = " + mySong.position);
+    console.log("songTime = " + songTime);
+    console.log("diff = " + (songTime - mySong.position));
+    console.log("avgDiff = " + avgDiff);
+}
+
 // game over sound controller
 var gameOverSound = true;
-// pad sound controller
-var padSoundDelay = frameCounter * 16;
 // music controller
 var musicPlaying = false;
 
@@ -342,10 +388,29 @@ var musicPlaying = false;
 mainChartReader = new ChartReader();
 
 // a sample chart...
-sampChart = [   [0,0,0,0],
-                [0,0,0,0],
-                [0,0,0,0],
-                [0,0,0,0]   
+sampChart = [  	
+				[1000,0,0,0,1],
+				[1500,1,0,0,0],
+				[2000,0,1,0,0],
+				[2500,0,0,1,0],
+				[3000,0,0,0,1],
+				[3500,1,0,0,0],
+				[4000,0,1,0,0],
+				[4500,0,0,1,0],
+				[5000,0,0,0,1],
+				[5500,0,1,0,1],
+				[6000,0,1,0,1],
+				[6500,1,0,0,0],
+				[7000,0,1,0,0],
+				[7500,0,0,1,0],
+				[8000,0,0,0,1],
+				[8500,1,0,0,0],
+				[9000,0,1,0,0],
+				[9500,0,0,1,0],
+				[10000,0,0,0,1],
+				[10500,1,0,0,0],
+				[11000,0,1,0,0],
+				[11500,0,0,1,0],
             ];
             
 // load the sample chart
@@ -364,6 +429,8 @@ var previousFrameTime = new Date().getTime();
 var currentFrameTime = 0;
 var ms = 0;
 var lastReportedPlayheadPosition = 0;
+var prevSongTime = 0;
+var pureSongTime = 0;
 
 var avgDiff = 0;
 var diffCounter = 1;
@@ -375,10 +442,10 @@ var songPositionWeight = 1.0;
 function main() {
 
     // check milliseconds passed in between each frameCounter
-    currentFrameTime = new Date().getTime();
-    ms = currentFrameTime - previousFrameTime;
+    //currentFrameTime = new Date().getTime();
+    //ms = currentFrameTime - previousFrameTime;
     //console.log(ms);
-    previousFrameTime = new Date().getTime();
+    //previousFrameTime = new Date().getTime();
 
 	// clear screen
 	ctx.clearRect(0,0, canvas.width, canvas.height);
@@ -397,6 +464,9 @@ function main() {
 			state = "playing";
 		}
 		
+		drawTitle();
+		
+		
 		return;
 	}
     // *** END START ***
@@ -405,6 +475,8 @@ function main() {
 	if (state == "gameover") {
 		orbs = [];
 		drawScore();
+		mySong.stop();
+		musicPlaying = false;
 
 		if (gameOverSound) {
 			//playSound("explosion");
@@ -442,6 +514,9 @@ function main() {
         musicPlaying = true;
     }
 
+	// debug var
+	prevSongTime = songTime;
+
     // wait for song to actually start before recording song time
     if (mySong.position > 0) {
         songTime = new Date().getTime() - startTime;
@@ -450,49 +525,54 @@ function main() {
         startTime = new Date().getTime();
     }
     
-    console.log("****************************");
-    console.log("songTime before avg = " + songTime);
-    
-    //framesBetweenPlayheadUpdate++;
+	// debug var
+	pureSongTime = songTime;
     
     // easing algorithm to keep song time (relatively) in sync with reported audio playhead
     if (mySong.position != lastReportedPlayheadPosition) {
-        
-        songTime = ((songTime * songTimeWeight) + (mySong.position * songPositionWeight)) / 2;
-       
+        		
+        //songTime = ((songTime * songTimeWeight) + (mySong.position * songPositionWeight)) / 2;
+		songTime = (songTime + mySong.position) / 2;
     }
-    
-    console.log("songPosition = " + mySong.position);
-    console.log("songTime = " + songTime);
-    console.log("diff = " + (songTime - mySong.position));
+	
+	// don't allow significant jumps around
+	if (songTime - prevSongTime > 25) {
+		songTime -= (songTime - prevSongTime - 25);
+	}
+	
+	// calculate average diff
     avgDiff = ((avgDiff * diffCounter) + (songTime - mySong.position)) / (diffCounter + 1);
     
     if (mySong.position > 0) {
         diffCounter++;
     }
-    console.log("avgDiff = " + avgDiff);
     
     // weight the value of the songTime and songPosition variables in the average to pull them 
     // as closely into sync as possible
+	// DEPRECATED 4.17.16: This just trends towards using only the song position, which is not what we want
+	/*
     if ((songTime - mySong.position) < 0 && avgDiff < -1) {
-        songTimeWeight -= 0.01;
-        songPositionWeight += 0.01;
+        songTimeWeight += 0.01;
+        songPositionWeight -= 0.01;
     }
     else if ((songTime - mySong.position) > 0 && avgDiff > 1) {
-        songPositionWeight -= 0.01;
-        songTimeWeight += 0.01;
+        songPositionWeight += 0.01;
+        songTimeWeight -= 0.01;
     }
-    
-    
+    console.log("songPositionWeight = " + songPositionWeight);
+	console.log("songTimeWeight = " + songTimeWeight);
+    */
 
 	// update frameCounter
-	frameCounter--;
+	//frameCounter--;
     
     // TEST: rather than using a frameCounter, let's try measuring the beats by millisecond value and use song time to fire them
 	// we have struck a beat
 	//if (frameCounter == 0) {
     // 500 ms per beat at 120 BPM... if our songTime is within this range it's time to strike a beat
-    if ((songTime % 500 <= 6 || 500 - (songTime % 500) <= 6) && songTime > 0)  {
+	
+	/*
+    if ((songTime % 500 <= 10 || 500 - (songTime % 500) <= 6) && songTime > 0))  {
 
         console.log("playing a beat, songTime = " + songTime);
 		// play our sound
@@ -506,21 +586,13 @@ function main() {
 		frameCounter = calcFramesPerBeat(FPS, BPM);
 		//console.log(frameCounter);
 	}
-	else if (frameCounter == calcFramesPerBeat(FPS, BPM)/2) {
-		//playSound("bass");
-	}
+	*/
+	
+	//debug();
+	
+    mainChartReader.read(songTime);
 
-    //mainChartReader.read();
-
-
-	padSoundDelay--;
-	if (padSoundDelay == 0) {
-
-		//playSound("pad");
-
-		padSoundDelay = calcFramesPerBeat(FPS, BPM) * 64;
-	}
-
+	// draw the tracks
 	drawTrack(0, y - (rectHeight / 2), x, rectHeight, 3);
 	drawTrack(x - (rectHeight / 2), 0, rectHeight, y, 0);
 	drawTrack(x, y - (rectHeight / 2), x, rectHeight, 1);
@@ -547,13 +619,10 @@ function main() {
 		return Orb.active;
 	});
 
-	//handleCollisions();
-
 	// decrement cooldown
 	var i = 0;
 	for(i=0; i<6; i++) {
 		if (cooldown[i] > 0) {
-			//console.log(cooldown[i]);
 			cooldown[i]--;
 		}
 		else {
@@ -562,6 +631,7 @@ function main() {
 	}
 
 
+	// checking game state once again
 	health--;
 
 	if (health < 0) {
