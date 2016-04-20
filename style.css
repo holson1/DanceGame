@@ -2,6 +2,11 @@
 	padding: 0; margin: 0; 
 }
 
+@font-face {
+    font-family: Unibody-reg;
+    src: url(./assets/fonts/Unibody8Pro-Regular.otf);
+}
+
 html {
 	height: 100%;
 	width: 100%;

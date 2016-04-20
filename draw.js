@@ -168,19 +168,21 @@ function drawGameOver() {
 
 function drawTitle() {
 
-	var titleTextX = 70;
+	var titleTextX = 30;
 	var titleTextY = 100;
 
-	ctx.font = "60px Courier";
+	ctx.font = "50px Unibody-reg";
 	ctx.fillStyle = "rgb(255,255,255)";
 	ctx.fillText("SwapStepper", titleTextX, titleTextY);
+	ctx.strokeStyle = "rgb(0,0,0)";
+	ctx.strokeText("SwapStepper", titleTextX, titleTextY);
 
 	
 
-	ctx.font = "20px Courier";
-	ctx.fillText("Press <space> to play!", 140, 450);
-	ctx.font = "10px Courier";
-	ctx.fillText("Copyright Henry Olson 2016", 185, 500);
+	ctx.font = "15px Unibody-reg";
+	ctx.fillText("Press <space> to play!", 145, 450);
+	ctx.font = "9px Unibody-reg";
+	ctx.fillText("Copyright Henry Olson 2016", 180, 500);
 	
 	rects.forEach(function(Rect) {
 			

@@ -8,7 +8,7 @@ var soundArr = {"bassDrum":"./assets/sounds/kick_drum.ogg",
 				"bass":"./assets/sounds/bass.ogg",
 				/*"explosion":"./assets/sounds/explosion.ogg",
 				"pad":"./assets/sounds/110212__bluebloomers__pad-1.ogg",*/
-                "120BPM":"./assets/sounds/120 Default - 4-9-16, 12.55 PM.ogg"};
+                "120BPM":"./assets/sounds/120 Default.ogg"};
 
 // load all the sounds we might want to use
 function loadSounds () {

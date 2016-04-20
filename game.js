@@ -21,7 +21,7 @@ function calcFramesPerBeat(FPS, BPM) {
 	return fpb;
 }
 var framesPerBeat = calcFramesPerBeat(FPS, BPM);
-//var framesPerBeat = Math.ceil(FPS / BPS);
+
 console.log(framesPerBeat);
 // frames/beat
 var frameCounter = framesPerBeat;
@@ -58,7 +58,7 @@ var orbRadius = 6;
 var distanceToRectCenter = x - radius - (rectWidth / 2) + (overlap/2);
 // this could be a factor of BPM...the higher the BPM the faster the orb should move
 var beatsToCenter = 2;
-//var beatsToCenter = 200/BPM;
+var msToCenter = 1000 / beatsToCenter;
 
 var distancePerBeat = distanceToRectCenter / beatsToCenter;
 //var orbSpeed = 2;
@@ -276,22 +276,29 @@ function ChartReader() {
     // read a line from the chart
     this.read = function(songMS) {
         
+		
+		
+		// TODO: this is problematic...seems to be cutting off one length early
         if (this.chart.length == 0) {
 
-			//this.load(ChartGenerator(120, songMS, 0));
+			console.log("logging chart running out. song ms = " + songMS);
+			this.load(ChartGenerator(BPM, songMS, 0));
             return;
         }
-        
+		
 		line = this.chart[0];
 		var noteArrivalTime = line[0];
-		var noteCreationTime = noteArrivalTime - 500;
+		
+		// we need to create the note early enough so that it crosses the field in time
+		var noteCreationTime = noteArrivalTime - msToCenter;
 		//console.log(noteCreationTime);
 		//console.log(songMS);
 		
 		// if we're ready to create a note...
 		if ((noteCreationTime - songMS < 15 && noteCreationTime - songMS > -15) && songMS > 0) {
 			
-			//console.log("ok");
+			console.log("creating this.. " + this.chart[0]);
+			console.log("chart time = " + songMS);
 			for (i = 1; i < line.length; i++) {
 				if(line[i] > 0) {
 					orbGen(i-1);
@@ -319,20 +326,74 @@ function ChartGenerator(myBPM, songMS, startTime) {
 	// next beat
 	console.log(songMS);
 	console.log(songMS % msPerBeat)
-	chartBegin = songMS + (msPerBeat - (songMS % msPerBeat));
 	
-	chartLength = 16;
+	// ex: songMS = 5507 (just played a beat at 5500 to reach at 6000)
+	// ex: msPerBeat = 500
+	// ex: we want to write the next chart NOT for 6000 (because that's when our last created note will reach)
+	// ex: but for 6500, so it will be created at 6000 (hence the + msToCenter)
+	chartBegin = songMS + (msPerBeat - (songMS % msPerBeat) + msToCenter);
+	chartLength = 8;
+	
+	// determine which pattern to use
+	pattern = Math.floor(Math.random() * 3);
+	
+	// loop through the chart-to-be, building one element at a time
 	for (k = 0; k < chartLength; k++) {
 		
-		// four on the floor standard
-		line = [chartBegin, 1, 0, 0 ,0];
-		console.log(line);
+		switch (pattern) {
+			case 0:
+				// four on the floor standard
+				//line = [chartBegin, 1, 0, 0 ,0];
+				line = buildRandChartLine(chartBegin, 1);
+				break;
+			case 1:
+				// four on the floor + snare
+				if (k % 2 == 0) {
+					line = buildRandChartLine(chartBegin, 1);
+				}
+				else {
+					line = buildRandChartLine(chartBegin, 2);
+				}
+				break;
+			default:
+				// four on the floor standard
+				line = buildRandChartLine(chartBegin, 1);
+				break;
+		}
+		
+		//console.log(line);
 		genChart.push(line);
-		
-		chartBegin += msPerBeat;
-		
+		chartBegin += msPerBeat;		
 	}
 	return genChart;
+}
+
+// given a random side and chartTime, create a unique line in a chart
+function buildRandChartLine(chartBegin, twoSides) {
+	
+	side = Math.floor(Math.random() * 4) + 1;
+	side2 = 99;
+	if (twoSides == 2) {
+		side2 = side;
+		while (side2==side) {
+			side2 = Math.floor(Math.random() * 4) + 1;
+		}
+	}
+	
+	
+	line = new Array();
+	line.push(chartBegin);
+	for (i = 1; i < 5; i++) {
+		if (side == i || side2 == i) {
+			line.push(1);
+		}
+		else {
+			line.push(0);
+		}
+	}
+	
+	console.log(line);
+	return line;
 }
 
 
@@ -410,11 +471,11 @@ sampChart = [
 				[10000,0,0,0,1],
 				[10500,1,0,0,0],
 				[11000,0,1,0,0],
-				[11500,0,0,1,0],
+				[11500,0,0,1,0]
             ];
             
 // load the sample chart
-mainChartReader.load(sampChart);
+//mainChartReader.load(sampChart);
 
 //console.log(mainChartReader.chart);
 
