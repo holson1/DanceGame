@@ -264,3 +264,44 @@ function drawOrb(xpos, ypos, color) {
 	ctx.fill();
 	ctx.closePath();
 }
+
+// draw the "outside circle"
+function drawOutsideCircle() {
+	
+	ctx.beginPath();
+	ctx.arc(x, y, 264, Math.PI * .25, Math.PI * 0.75, false);
+	ctx.strokeStyle = convertToAlpha(sideColors[2]);
+	ctx.lineWidth = 2;
+	ctx.stroke();
+	ctx.closePath();
+	
+	ctx.beginPath();
+	ctx.arc(x, y, 264, Math.PI * .75, Math.PI * 1.25, false);
+	ctx.strokeStyle = convertToAlpha(sideColors[3]);
+	ctx.lineWidth = 2;
+	ctx.stroke();
+	ctx.closePath();
+	
+	ctx.beginPath();
+	ctx.arc(x, y, 264, Math.PI * 1.25, Math.PI * 1.75, false);
+	ctx.strokeStyle = convertToAlpha(sideColors[0]);
+	ctx.lineWidth = 2;
+	ctx.stroke();
+	ctx.closePath();
+	
+	ctx.beginPath();
+	ctx.arc(x, y, 264, Math.PI * 1.75, Math.PI * 0.25, false);
+	ctx.strokeStyle = convertToAlpha(sideColors[1]);
+	ctx.lineWidth = 2;
+	ctx.stroke();
+	ctx.closePath();
+}
+
+// convert an rgb color into an rgba
+function convertToAlpha(colorStr) {
+	
+	// rbg(000,000,000)
+	colorStr = "rgba" + colorStr.substring(3, 15) + ",0.5)";
+	
+	return colorStr;
+}

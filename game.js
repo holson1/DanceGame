@@ -22,14 +22,10 @@ function calcFramesPerBeat(FPS, BPM) {
 }
 var framesPerBeat = calcFramesPerBeat(FPS, BPM);
 
-console.log(framesPerBeat);
-// frames/beat
-var frameCounter = framesPerBeat;
-
 // animation timers
 death_animT = 0;
 
-// score vars
+// constants
 var health = 700;
 var score = 0;
 var combo = 0;
@@ -39,9 +35,10 @@ var special = 0;
 var scoreIncr = 100;
 var healthIncr = 40;
 var healthPenalty = 15;
-var r = 0;
-var g = 255;
-var b = 255; 
+var RED = "rgb(255,000,000)";
+var BLUE = "rgb(000,000,255)";
+var GREEN = "rgb(000,144,000)";
+var YELLOW = "rgb(255,255,000)";
 
 // vars for drawing the catcher
 var x = 265;
@@ -71,13 +68,14 @@ var boundRight = x + radius - overlap;
 var boundBot = y  + radius - overlap;
 var boundLeft = x - radius + overlap;
 
-// vars for controlling input
-// up, right, down, left, power, pause
-var buttonArr = [false, false, false, false, false, false];
-var keyReady = [true, true, true, true, true, true];
-var cooldown = [0, 0, 0, 0, 0, 0];
-var collisions = [false, false, false, false, false, false];
+// array initialization
+// up, right, down, left, power, pause, swap counterclockwise, swap clockwise
+var buttonArr = [false, false, false, false, false, false, false, false];
+var keyReady = [true, true, true, true, true, true, true, true];
+var cooldown = [0, 0, 0, 0, 0, 0, 0, 0];
+var collisions = [false, false, false, false, false, false, false, false];
 var buttonSelect = 0;
+var sideColors = [RED, BLUE, GREEN, YELLOW];
 
 // var for standard cooldown
 var cooldownLength = 5;
@@ -143,6 +141,34 @@ function keyDownHandler(e) {
 				cooldown[4] = 100;
 			}
 			break;
+		case 90:
+			if (cooldown[6] == 0 && keyReady[6]) {
+				
+				buttonArr[6] = true;
+				keyReady[6] = false;
+				cooldown[6] = cooldownLength;
+				
+				topColor = rects[0].color;
+				for(i = 0; i < rects.length; i++) {
+					rects[i].color = rects[(i + 1) % rects.length].color;
+				}
+				rects[3].color = topColor;
+			}
+			break;
+		case 88:
+			if (cooldown[7] == 0 && keyReady[7]) {
+				
+				buttonArr[7] = true;
+				keyReady[7] = false;
+				cooldown[7] = cooldownLength;
+				
+				leftColor = rects[3].color;
+				for(i = 3; i > 0; i--) {
+					rects[i].color = rects[(i - 1 )].color;
+				}
+				rects[0].color = leftColor;
+			}
+			break;
 		default:
 			break;
 	}
@@ -170,6 +196,14 @@ function keyUpHandler(e) {
 			buttonArr[4] = false;
 			keyReady[4] = true;
 			break;
+		case 90:
+			buttonArr[6] = false;
+			keyReady[6] = true;
+			break;
+		case 88:
+			buttonArr[7] = false;
+			keyReady[7] = true;
+			break;
 		default:
 			break;
 	}
@@ -191,12 +225,15 @@ function handleCollisions() {
 						(Orb.y + (orbRadius / 2) < Rect.y + Rect.height) && (Orb.y + (orbRadius / 2) > Rect.y)) {*/
 					if ((Orb.x < Rect.x + Rect.width) && ((Orb.x + orbRadius) > Rect.x) && 
 						(Orb.y < Rect.y + Rect.height) && ((Orb.y + orbRadius) > Rect.y)) {
-						score += scoreIncr;
-						health += healthIncr;
-						combo += 1;
-						Orb.active = false;
-						collisions[Rect.side] = true;
-						hitOrb = true;
+						
+						if (Orb.color == Rect.color) {	
+							score += scoreIncr;
+							health += healthIncr;
+							combo += 1;
+							Orb.active = false;
+							collisions[Rect.side] = true;
+							hitOrb = true;
+						}
 					}
 				
 			});
@@ -297,15 +334,27 @@ function ChartReader() {
 		// if we're ready to create a note...
 		if ((noteCreationTime - songMS < 15 && noteCreationTime - songMS > -15) && songMS > 0) {
 			
-			console.log("creating this.. " + this.chart[0]);
-			console.log("chart time = " + songMS);
+			//console.log("creating this.. " + this.chart[0]);
+			//console.log("chart time = " + songMS);
 			for (i = 1; i < line.length; i++) {
-				if(line[i] > 0) {
-					orbGen(i-1);
+				
+				console.log(i);
+				if(line[i] == "R") {
+					swapSides("r");
+					console.log("R");
+				}
+				else if(line[i] == "L") {
+					swapSides("l");
+					console.log("L");			
+				}
+				else if(line[i] > 0) {
+					orbGen(i-1, sideColors[i-1]);
 				}
         	}
 			
+			console.log("here");
 			this.chart.shift();
+			console.log(this.chart);
 		}
 		else if(noteCreationTime - songMS < -15 && songMS > 0) {
 			console.log("falls outside of region");
@@ -317,25 +366,38 @@ function ChartReader() {
 // generate a chart in real time :O
 function ChartGenerator(myBPM, songMS, startTime) {
 	
-	genChart = new Array();
+	var genChart = new Array();
 	
 	// get ms for every beat
-	myBPS = myBPM/60;
-	msPerBeat = 1000/myBPS;
+	var myBPS = myBPM/60;
+	var msPerBeat = 1000/myBPS;
 	
 	// next beat
-	console.log(songMS);
-	console.log(songMS % msPerBeat)
+	//console.log(songMS);
+	//console.log(songMS % msPerBeat)
 	
 	// ex: songMS = 5507 (just played a beat at 5500 to reach at 6000)
 	// ex: msPerBeat = 500
 	// ex: we want to write the next chart NOT for 6000 (because that's when our last created note will reach)
 	// ex: but for 6500, so it will be created at 6000 (hence the + msToCenter)
-	chartBegin = songMS + (msPerBeat - (songMS % msPerBeat) + msToCenter);
-	chartLength = 8;
+	var chartBegin = songMS + (msPerBeat - (songMS % msPerBeat) + msToCenter);
+	var chartLength = 8;
 	
 	// determine which pattern to use
-	pattern = Math.floor(Math.random() * 3);
+	var pattern = Math.floor(Math.random() * 3);
+	
+	// determine whether to swap sides or not
+	var swapVal = Math.floor(Math.random() * 100);
+	
+	// TEMP: 1 out of 3 chance to swap sides
+	if (swapVal % 3 == 0) {
+		if (swapVal % 2 == 0) {
+			swapSides("r");
+		}
+		else {
+			swapSides("l");
+		}
+	}
 	
 	// loop through the chart-to-be, building one element at a time
 	for (k = 0; k < chartLength; k++) {
@@ -379,8 +441,7 @@ function buildRandChartLine(chartBegin, twoSides) {
 			side2 = Math.floor(Math.random() * 4) + 1;
 		}
 	}
-	
-	
+		
 	line = new Array();
 	line.push(chartBegin);
 	for (i = 1; i < 5; i++) {
@@ -392,7 +453,7 @@ function buildRandChartLine(chartBegin, twoSides) {
 		}
 	}
 	
-	console.log(line);
+	//console.log(line);
 	return line;
 }
 
@@ -400,33 +461,54 @@ function buildRandChartLine(chartBegin, twoSides) {
 // main orb generation function
 // args
 // side: a number which corresponds to the side to generate the orb at
-function orbGen(side) {
+function orbGen(side, orbColor) {
 
 	switch(side) {
 		case 0:
 			// top
-			temp = new Orb(x, 0, 0, orbSpeed, "rgb(255,0,0)");
+			temp = new Orb(x, 0, 0, orbSpeed, orbColor);
 			orbs.push(temp);
 			break;
 		case 1:
 			// right
-			temp = new Orb(x*2, y, (orbSpeed * -1), 0, "rgb(0,0,255)");
+			temp = new Orb(x*2, y, (orbSpeed * -1), 0, orbColor);
 			orbs.push(temp);
 			break;
 		case 2:
 			// bottom
-			temp = new Orb(x, y*2, 0, (orbSpeed * -1), "rgb(0,144,0)");
+			temp = new Orb(x, y*2, 0, (orbSpeed * -1), orbColor);
 			orbs.push(temp);
 			break;
 		case 3:
 			// left
-			temp = new Orb(0, y, orbSpeed, 0, "rgb(255,255,0)");
+			temp = new Orb(0, y, orbSpeed, 0, orbColor);
 			orbs.push(temp);
 			break;
 		default:
 			console.log("bad side received: " + side.toString());
 			break;
 	}
+}
+
+// swap the orb colors
+function swapSides(direction) {
+	
+	if (direction == "l") {
+		var storedColor = sideColors[0];
+		for (j = 0; j < 3; j++) {
+			sideColors[j] = sideColors[j+1];
+		}
+		sideColors[3] = storedColor;
+	}
+	else if (direction == "r") {
+		var storedColor = sideColors[3];
+		for (j = 3; j > 0; j--) {
+			sideColors[j] = sideColors[j-1];
+		}
+		sideColors[0] = storedColor;
+	}
+	
+	console.log("test");
 }
 
 function debug() {
@@ -454,18 +536,22 @@ sampChart = [
 				[1500,1,0,0,0],
 				[2000,0,1,0,0],
 				[2500,0,0,1,0],
+				[2750, "R"],
 				[3000,0,0,0,1],
 				[3500,1,0,0,0],
 				[4000,0,1,0,0],
 				[4500,0,0,1,0],
+				[4750, "L"],
 				[5000,0,0,0,1],
 				[5500,0,1,0,1],
 				[6000,0,1,0,1],
 				[6500,1,0,0,0],
+				[6750, "R"],
 				[7000,0,1,0,0],
 				[7500,0,0,1,0],
 				[8000,0,0,0,1],
 				[8500,1,0,0,0],
+				[8750, "L"],
 				[9000,0,1,0,0],
 				[9500,0,0,1,0],
 				[10000,0,0,0,1],
@@ -475,9 +561,8 @@ sampChart = [
             ];
             
 // load the sample chart
-//mainChartReader.load(sampChart);
+mainChartReader.load(sampChart);
 
-//console.log(mainChartReader.chart);
 
 var mySong;
 // load the sounds
@@ -626,32 +711,13 @@ function main() {
 
 	// update frameCounter
 	//frameCounter--;
-    
-    // TEST: rather than using a frameCounter, let's try measuring the beats by millisecond value and use song time to fire them
-	// we have struck a beat
-	//if (frameCounter == 0) {
-    // 500 ms per beat at 120 BPM... if our songTime is within this range it's time to strike a beat
-	
-	/*
-    if ((songTime % 500 <= 10 || 500 - (songTime % 500) <= 6) && songTime > 0))  {
-
-        console.log("playing a beat, songTime = " + songTime);
-		// play our sound
-		//playSound("bassDrum");
-
-		// random side chooser - to replace w/ generate charts for more variety
-		side = Math.floor(Math.random() * 4);
-		orbGen(side);
-        
-		//BPM++;
-		frameCounter = calcFramesPerBeat(FPS, BPM);
-		//console.log(frameCounter);
-	}
-	*/
 	
 	//debug();
 	
     mainChartReader.read(songTime);
+
+	// draw the outside circle
+	drawOutsideCircle();
 
 	// draw the tracks
 	drawTrack(0, y - (rectHeight / 2), x, rectHeight, 3);
@@ -682,7 +748,7 @@ function main() {
 
 	// decrement cooldown
 	var i = 0;
-	for(i=0; i<6; i++) {
+	for(i=0; i<8; i++) {
 		if (cooldown[i] > 0) {
 			cooldown[i]--;
 		}
