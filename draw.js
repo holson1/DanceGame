@@ -119,14 +119,14 @@ function drawScore() {
 
 
 	var scoreString = score + "";
-	while(scoreString.length < 8) {
-		scoreString = " " + scoreString;
-	}
+	//while(scoreString.length < 8) {
+	//	scoreString = " " + scoreString;
+	//}
 
-	var scoreX = 0;
+	var scoreX = 140 - (scoreString.length * 18);
 	var scoreY = 30;
 
-	ctx.font = "30px Courier";
+	ctx.font = "20px Unibody-reg";
 	ctx.fillStyle = "white";
 	//for(i=0; i<6; i++) {
 	//	if(cooldown[i] > 0) {
@@ -142,7 +142,7 @@ function drawScore() {
 
 function drawCombo(combo) {
 
-	ctx.font = "30px Courier";
+	ctx.font = "20px Unibody-reg";
 	ctx.fillStyle = "white";
 
 	var comboString = combo + "";
@@ -153,25 +153,72 @@ function drawCombo(combo) {
 
 }
 
-function drawGameOver() {
+function drawResultScreen(passed) {
 
-	var gameOverTextX = 50;
-	var gameOverTextY = 200;
+	var resultText = "FAILED";
+	var resultTextX = 115;
+	var resultTextY = 150;
+	var resultColor = "rgb(215,50,50)";
 
-	ctx.font = "80px Courier";
-	ctx.fillStyle = "rgb(255,255,255)";
-	ctx.fillText("GAME OVER", gameOverTextX, gameOverTextY);
+	if (passed) {
+		
+		resultText = "COMPLETE!";
+		resultTextX = 30;
+		resultTextY = 150;
+		resultColor = "rgb(50, 215, 215)";
+	}
 
-	ctx.font = "20px Courier";
-	ctx.fillText("Press <space> to play again.", 100, 250);
+	ctx.font = "64px Unibody-reg";
+	ctx.fillStyle = resultColor;
+	ctx.fillText(resultText, resultTextX, resultTextY);
+	ctx.strokeStyle = "rgb(0,0,0)";
+	ctx.strokeText(resultText, resultTextX, resultTextY);
+
+	var col1_X = 85;
+	var scoreChartY = 250;
+	var col2_X = 355;
+
+	// final score
+	ctx.fillStyle = "rgb(225,225,225)";
+	ctx.font = "18px Unibody-reg";
+	ctx.fillText("Final Score", col1_X, scoreChartY);
+	ctx.fillText("500", col2_X, scoreChartY);
+	
+	ctx.beginPath();
+	ctx.rect(col1_X, scoreChartY + 30 - 25, 360, 30);
+	ctx.fillStyle = "#2A3E45";
+	ctx.fill();
+	ctx.closePath();
+	
+	ctx.fillStyle = "rgb(225,225,225)";
+	ctx.fillText("Num of Misses", col1_X, scoreChartY + 30);
+	ctx.fillText("20", col2_X, scoreChartY + 30);
+	ctx.fillText("Longest Combo", col1_X, scoreChartY + 60);
+	ctx.fillText("15", col2_X, scoreChartY + 60);
+	
+	ctx.beginPath();
+	ctx.rect(col1_X, scoreChartY + 90 - 25, 360, 30);
+	ctx.fillStyle = "#2A3E45";
+	ctx.fill();
+	ctx.closePath();
+	
+	ctx.fillStyle = "rgb(225,225,225)";
+	ctx.fillText("% Hit", col1_X, scoreChartY + 90);
+	ctx.fillText("98", col2_X, scoreChartY + 90);
+	ctx.fillText("GRADE", col1_X, scoreChartY + 120);
+	ctx.fillText("A", col2_X, scoreChartY + 120);
+	
+	ctx.fillText("Restart", 215, 450);
+	ctx.fillStyle = "#2A3E45";
+	ctx.fillText("Song Select", 185, 480);
 }
 
 function drawTitle() {
 
-	var titleTextX = 30;
+	var titleTextX = 0;
 	var titleTextY = 100;
 
-	ctx.font = "50px Unibody-reg";
+	ctx.font = "55px Unibody-reg";
 	ctx.fillStyle = "rgb(255,255,255)";
 	ctx.fillText("SwapStepper", titleTextX, titleTextY);
 	ctx.strokeStyle = "rgb(0,0,0)";

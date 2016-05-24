@@ -21,6 +21,7 @@ function calcFramesPerBeat(FPS, BPM) {
 	return fpb;
 }
 var framesPerBeat = calcFramesPerBeat(FPS, BPM);
+var frameCounter = 0;
 
 // animation timers
 death_animT = 0;
@@ -135,10 +136,9 @@ function keyDownHandler(e) {
 			break;
 		case 32:
 			if (cooldown[4] == 0 && keyReady[4]) {
-				
 				buttonArr[4] = true;
 				keyReady[4] = false;
-				cooldown[4] = 100;
+				cooldown[4] = cooldownLength;
 			}
 			break;
 		case 90:
@@ -307,18 +307,25 @@ function ChartReader() {
     
     // load a new chart into the reader
     this.load = function(newChart) {
+		
+		// code here to load chart from file (so we're not overwriting the obj)
+		
+		
+		// this is a pass by reference, not value
+		// needs to be hella updated
+		
+		this.chart = new Array();	
         this.chart = newChart;
+
     }
     
     // read a line from the chart
     this.read = function(songMS) {
         
-		
-		
 		// TODO: this is problematic...seems to be cutting off one length early
         if (this.chart.length == 0) {
 
-			console.log("logging chart running out. song ms = " + songMS);
+			//console.log("logging chart running out. song ms = " + songMS);
 			this.load(ChartGenerator(BPM, songMS, 0));
             return;
         }
@@ -338,23 +345,23 @@ function ChartReader() {
 			//console.log("chart time = " + songMS);
 			for (i = 1; i < line.length; i++) {
 				
-				console.log(i);
+				//console.log(i);
 				if(line[i] == "R") {
 					swapSides("r");
-					console.log("R");
+					//console.log("R");
 				}
 				else if(line[i] == "L") {
 					swapSides("l");
-					console.log("L");			
+					//console.log("L");			
 				}
 				else if(line[i] > 0) {
 					orbGen(i-1, sideColors[i-1]);
 				}
         	}
 			
-			console.log("here");
+			//console.log("here");
 			this.chart.shift();
-			console.log(this.chart);
+			//console.log(this.chart);
 		}
 		else if(noteCreationTime - songMS < -15 && songMS > 0) {
 			console.log("falls outside of region");
@@ -530,8 +537,50 @@ var musicPlaying = false;
 // a chart reader
 mainChartReader = new ChartReader();
 
-// a sample chart...
-sampChart = [  	
+
+            
+
+var mySong;
+// load the sounds
+loadSounds();
+
+// audio sync shit
+var startTime = 0;
+var songTime = 0;
+var previousFrameTime = new Date().getTime();
+var currentFrameTime = 0;
+var ms = 0;
+var lastReportedPlayheadPosition = 0;
+var prevSongTime = 0;
+var pureSongTime = 0;
+
+var avgDiff = 0;
+var diffCounter = 1;
+
+var songTimeWeight = 1.0;
+var songPositionWeight = 1.0;
+
+// get ready for the song to start playing
+function initialize() {
+	
+	// score vars
+	health = 700;
+	score = 0;
+	combo = 0;
+	longestCombo = 0;
+	multiplier = 0;
+	gameOverSound = true;
+	
+	// reset sides
+	sideColors = [RED, BLUE, GREEN, YELLOW];
+	rects = [];
+	rects.push(new Rect(x - (rectHeight/2), y - radius - rectWidth + overlap, rectHeight, rectWidth, "rgb(255,000,000)", 0));
+	rects.push(new Rect(x + radius - overlap, y - (rectHeight/2), rectWidth, rectHeight, "rgb(000,000,255)", 1));
+	rects.push(new Rect(x - (rectHeight/2), y + radius - overlap, rectHeight, rectWidth, "rgb(000,144,000)", 2));
+	rects.push(new Rect(x - radius - rectWidth + overlap, y - (rectHeight/2), rectWidth, rectHeight, "rgb(255,255,000)", 3));
+	
+	// a sample chart...
+	sampChart = [  	
 				[1000,0,0,0,1],
 				[1500,1,0,0,0],
 				[2000,0,1,0,0],
@@ -559,30 +608,45 @@ sampChart = [
 				[11000,0,1,0,0],
 				[11500,0,0,1,0]
             ];
-            
-// load the sample chart
-mainChartReader.load(sampChart);
+	
+	// load the sample chart
+	mainChartReader.load(sampChart);
+	
+	// all audio
+	startTime = 0;
+	songTime = 0;
+	previousFrameTime = new Date().getTime();
+	currentFrameTime = 0;
+	ms = 0;
+	lastReportedPlayheadPosition = 0;
+	prevSongTime = 0;
+	pureSongTime = 0;
 
+	avgDiff = 0;
+	diffCounter = 1;
 
-var mySong;
-// load the sounds
-loadSounds();
+	songTimeWeight = 1.0;
+	songPositionWeight = 1.0;
+	
+	// anything else for loading sounds here
+}
 
-// audio sync shit
-var startTime = 0;
-var songTime = 0;
-var previousFrameTime = new Date().getTime();
-var currentFrameTime = 0;
-var ms = 0;
-var lastReportedPlayheadPosition = 0;
-var prevSongTime = 0;
-var pureSongTime = 0;
-
-var avgDiff = 0;
-var diffCounter = 1;
-
-var songTimeWeight = 1.0;
-var songPositionWeight = 1.0;
+// wrap up things at the end of the loop
+function endFrame() {
+	
+	// decrement cooldown and ensure buttonArr isn't true for more than one frame
+	var i = 0;
+	for(i=0; i<8; i++) {
+		
+		if (cooldown[i] > 0) {
+			buttonArr[i] = false;
+			cooldown[i]--;
+		}
+		else {
+			collisions[i] = false;
+		}
+	}
+}
 
 // main draw loop
 function main() {
@@ -593,34 +657,29 @@ function main() {
     //console.log(ms);
     //previousFrameTime = new Date().getTime();
 
+	// update frameCounter
+	frameCounter++;
+
 	// clear screen
 	ctx.clearRect(0,0, canvas.width, canvas.height);
 
-	// *** START ***
+	// *** MENU ***
 	if (state == "start") {
-		health = 700;
-		score = 0;
-		combo = 0;
-		longestCombo = 0;
-		multiplier = 0;
-		//BPM = BPM;
-		gameOverSound = true;
 
 		if (buttonArr[4]) {
+			initialize();
 			state = "playing";
 		}
 		
 		drawTitle();
-		
-		
+		endFrame();
 		return;
 	}
     // *** END START ***
 
-	// *** GAME OVER ***
-	if (state == "gameover") {
+	// *** RESULTS SCREEN ***
+	if (state == "results") {
 		orbs = [];
-		drawScore();
 		mySong.stop();
 		musicPlaying = false;
 
@@ -636,12 +695,14 @@ function main() {
 			return;
 		}
 
-		drawGameOver();
+		drawResultScreen(false);
 		
 		// restart
 		if (buttonArr[4]) {
 			state = "start";
 		}
+		
+		endFrame();
 		return;
 	}
     // *** END GAME OVER ***
@@ -677,7 +738,6 @@ function main() {
     // easing algorithm to keep song time (relatively) in sync with reported audio playhead
     if (mySong.position != lastReportedPlayheadPosition) {
         		
-        //songTime = ((songTime * songTimeWeight) + (mySong.position * songPositionWeight)) / 2;
 		songTime = (songTime + mySong.position) / 2;
     }
 	
@@ -692,25 +752,6 @@ function main() {
     if (mySong.position > 0) {
         diffCounter++;
     }
-    
-    // weight the value of the songTime and songPosition variables in the average to pull them 
-    // as closely into sync as possible
-	// DEPRECATED 4.17.16: This just trends towards using only the song position, which is not what we want
-	/*
-    if ((songTime - mySong.position) < 0 && avgDiff < -1) {
-        songTimeWeight += 0.01;
-        songPositionWeight -= 0.01;
-    }
-    else if ((songTime - mySong.position) > 0 && avgDiff > 1) {
-        songPositionWeight += 0.01;
-        songTimeWeight -= 0.01;
-    }
-    console.log("songPositionWeight = " + songPositionWeight);
-	console.log("songTimeWeight = " + songTimeWeight);
-    */
-
-	// update frameCounter
-	//frameCounter--;
 	
 	//debug();
 	
@@ -746,18 +787,6 @@ function main() {
 		return Orb.active;
 	});
 
-	// decrement cooldown
-	var i = 0;
-	for(i=0; i<8; i++) {
-		if (cooldown[i] > 0) {
-			cooldown[i]--;
-		}
-		else {
-			collisions[i] = false;
-		}
-	}
-
-
 	// checking game state once again
 	health--;
 
@@ -766,7 +795,7 @@ function main() {
 	}
 
 	if (health == 0) {
-		state = "gameover";
+		state = "results";
 		death_animT = 50;
 	}
 
@@ -780,6 +809,8 @@ function main() {
 	if (combo > 1) {
 		drawCombo(combo);
 	}
+	
+	endFrame();
 }
 
 setInterval(main, 1000/FPS);
