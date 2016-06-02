@@ -1,9 +1,27 @@
 // SwapStepper (tempName)
 // Copyright Henry Olson 2016
 
+// phaser game
+var game = new Phaser.Game(530, 530, Phaser.AUTO, 'backgroundDiv', null, false, false);
+
+
+
+// preload any images
+game.state.add("boot", boot);
+// menu loop control
+game.state.add("menu", menu);
+// playing a song
+game.state.add("play", play);
+// view the results afterwards
+//game.state.add("results", results);
+game.state.start("boot");
+
+
 // get the canvas
-var canvas = document.getElementById("myCanvas");
-var ctx = canvas.getContext("2d");
+// var canvas = document.getElementById("myCanvas");
+// var ctx = canvas.getContext("2d");
+
+
 
 // game variables
 var state = "start";
@@ -221,8 +239,8 @@ function handleCollisions() {
 
 			orbs.forEach(function(Orb) {
 				
-					/*if ((Orb.x + (orbRadius / 2) < Rect.x + Rect.width) && (Orb.x + (orbRadius / 2) > Rect.x) && 
-						(Orb.y + (orbRadius / 2) < Rect.y + Rect.height) && (Orb.y + (orbRadius / 2) > Rect.y)) {*/
+					// if ((Orb.x + (orbRadius / 2) < Rect.x + Rect.width) && (Orb.x + (orbRadius / 2) > Rect.x) && 
+					//	(Orb.y + (orbRadius / 2) < Rect.y + Rect.height) && (Orb.y + (orbRadius / 2) > Rect.y)) {
 					if ((Orb.x < Rect.x + Rect.width) && ((Orb.x + orbRadius) > Rect.x) && 
 						(Orb.y < Rect.y + Rect.height) && ((Orb.y + orbRadius) > Rect.y)) {
 						
@@ -648,6 +666,8 @@ function endFrame() {
 	}
 }
 
+/*
+	
 // main draw loop
 function main() {
 
@@ -661,7 +681,7 @@ function main() {
 	frameCounter++;
 
 	// clear screen
-	ctx.clearRect(0,0, canvas.width, canvas.height);
+	// ctx.clearRect(0,0, canvas.width, canvas.height);
 
 	// *** MENU ***
 	if (state == "start") {
@@ -671,7 +691,7 @@ function main() {
 			state = "playing";
 		}
 		
-		drawTitle();
+		// drawTitle();
 		endFrame();
 		return;
 	}
@@ -690,12 +710,12 @@ function main() {
 		// dying animation...
 		if (death_animT > 0) {
 
-			deathAnimation(death_animT);
+			//deathAnimation(death_animT);
 			death_animT--;
 			return;
 		}
 
-		drawResultScreen(false);
+		//drawResultScreen(false);
 		
 		// restart
 		if (buttonArr[4]) {
@@ -758,29 +778,29 @@ function main() {
     mainChartReader.read(songTime);
 
 	// draw the outside circle
-	drawOutsideCircle();
+	// drawOutsideCircle();
 
 	// draw the tracks
-	drawTrack(0, y - (rectHeight / 2), x, rectHeight, 3);
-	drawTrack(x - (rectHeight / 2), 0, rectHeight, y, 0);
-	drawTrack(x, y - (rectHeight / 2), x, rectHeight, 1);
-	drawTrack(x - (rectHeight / 2), y, rectHeight, y, 2);
+	// drawTrack(0, y - (rectHeight / 2), x, rectHeight, 3);
+	// drawTrack(x - (rectHeight / 2), 0, rectHeight, y, 0);
+	// drawTrack(x, y - (rectHeight / 2), x, rectHeight, 1);
+	// drawTrack(x - (rectHeight / 2), y, rectHeight, y, 2);
 
 	// draw the squares
-	rects.forEach(function(Rect) {
+	// rects.forEach(function(Rect) {
 
-		Rect.draw();
-	});
+	// 	Rect.draw();
+	// });
 
 	// update each orb
 	orbs.forEach(function(Orb) {
 
 		Orb.update();
-		Orb.draw();
+		// Orb.draw();
 	});
 
 	// draw the circle and its animations
-	drawCatcher();
+	// drawCatcher();
 
 	// filter out inactive orbs
 	orbs = orbs.filter(function(Orb) {
@@ -803,14 +823,14 @@ function main() {
 		health = 1100;
 	}
 
-	drawScore();
-	drawHealth();
+	// drawScore();
+	// drawHealth();
 
-	if (combo > 1) {
-		drawCombo(combo);
-	}
+	// if (combo > 1) {
+	// 	drawCombo(combo);
+	// }
 	
 	endFrame();
 }
 
-setInterval(main, 1000/FPS);
+setInterval(main, 1000/FPS); */

@@ -3,17 +3,21 @@
 // generic square-drawing function
 function drawRect(xpos, ypos, width, height, color, side) {
 
-	ctx.beginPath();
-	ctx.rect(xpos, ypos, width, height);
-	ctx.strokeStyle = color;
-	ctx.lineWidth = 2;
-	ctx.stroke();
-	if (buttonArr[side] && cooldown[side] > 0) {
+	var bmd = game.add.bitmapData(game.width,game.height);
+
+	bmd.ctx.beginPath();
+	bmd.ctx.rect(xpos, ypos, width, height);
+	bmd.ctx.strokeStyle = color;
+	bmd.ctx.lineWidth = 2;
+	bmd.ctx.stroke();
+	/*if (buttonArr[side] && cooldown[side] > 0) {
 		ctx.fillStyle = color;
 		ctx.fill();
-	}
-	ctx.closePath();
-
+	}*/
+	bmd.ctx.closePath();
+	bmd.smoothed = false;
+	var sprite = game.add.sprite(0, 0, bmd);
+	
 	// square animation
 	/*
 	if (cooldown[side] > 0 && collisions[side]) {
@@ -32,25 +36,32 @@ function drawRect(xpos, ypos, width, height, color, side) {
 
 function drawTrack(xpos, ypos, width, height, side) {
 
-	var grd=ctx.createLinearGradient(0,0,200,0);
+	var bmd = game.add.bitmapData(game.width,game.height);
+
+	var grd = bmd.ctx.createLinearGradient(0,0,200,0);
 	grd.addColorStop(0,"gray");
 	grd.addColorStop(1,"white");
-	ctx.beginPath();
-	ctx.rect(xpos, ypos, width, height);
-	ctx.strokeStyle = grd;
+	
+	bmd.ctx.beginPath();
+	bmd.ctx.rect(xpos, ypos, width, height);
+	bmd.ctx.strokeStyle = grd;
 	// we can use this code for a new animation
 	
-	if (cooldown[side] > 0 && collisions[side]) {
-		ctx.fillStyle = "rgba(255,255,255,0.2)";
+	//if (cooldown[side] > 0 && collisions[side]) {
+	//	ctx.fillStyle = "rgba(255,255,255,0.2)";
 		// rgb(255,255,255);
 		//trackFillColor = "rgba" + rects[side].color.substring(3,15) + ",0.2)";
 		//console.log(trackFillColor);
 		//trackFillColor = "rgba(255,255,0,0.2)";
 		//ctx.fillStyle = trackFillColor;
-		ctx.fill();
-	}
-	ctx.lineWidth = 0.2;
-	ctx.stroke();
+	//	ctx.fill();
+	//}
+	bmd.ctx.lineWidth = 0.2;
+	bmd.ctx.stroke();
+	bmd.ctx.closePath();
+	
+	bmd.smoothed = false;
+	var sprite = game.add.sprite(0, 0, bmd);
 
 	/*
 	for (i=1; i<beatsToCenter; i++) {
@@ -78,21 +89,42 @@ function drawTrack(xpos, ypos, width, height, side) {
 // draw the catcher
 function drawCatcher() {
 
-	// circle
-	ctx.beginPath();
-	ctx.arc(x, y, radius, 0, Math.PI*2, false);
-	ctx.strokeStyle = "white";
-	ctx.lineWidth = 2;
-	ctx.stroke();
-	//if (/*buttonArr[4] && */cooldown[4] > 0) {
-	//	ctx.fillStyle = "white";
-	//}
-	//else {
-		ctx.fillStyle = "black";
-	//}
-	ctx.fill();
-	ctx.closePath();
+	//console.log("draw catcher");
+	
+	var bmd = game.add.bitmapData(game.width,game.height);
 
+    // draw to the canvas context like normal
+    bmd.ctx.beginPath();
+    //bmd.ctx.rect(0,0,150,120);
+	bmd.ctx.arc(x, y, radius, 0, Math.PI*2, false);
+    bmd.ctx.strokeStyle = "white";
+	bmd.ctx.lineWidth = 2;
+    bmd.ctx.stroke();
+	bmd.ctx.fillStyle = "black";
+	bmd.ctx.fill();
+	bmd.ctx.closePath();
+	bmd.smoothed = false;
+    // use the bitmap data as the texture for the sprite
+    var sprite = game.add.sprite(0, 0, bmd);
+
+	// var bmd = game.add.bitmapData(128,128);
+	
+	// // circle
+	// bmd.ctx.beginPath();
+	// bmd.ctx.arc(x, y, radius, 0, Math.PI*2, false);
+	// bmd.ctx.strokeStyle = "white";
+	// bmd.ctx.lineWidth = 2;
+	// bmd.ctx.stroke();
+	// //if (/*buttonArr[4] && */cooldown[4] > 0) {
+	// //	ctx.fillStyle = "white";
+	// //}
+	// //else {
+	// 	//bmd.ctx.fillStyle = "black";
+	// //}
+	// //bmd.ctx.fill();
+	// bmd.ctx.closePath();
+
+	// var sprite = game.add.sprite(200,200,bmd);
 
 	// just a fun animation test
 	// just kidding, this is awesome! animation for the super power
@@ -215,9 +247,16 @@ function drawResultScreen(passed) {
 
 function drawTitle() {
 
-	var titleTextX = 0;
-	var titleTextY = 100;
+	var titleTextX = 7;
+	var titleTextY = 50;
 
+	this.game.add.bitmapText(titleTextX, titleTextY, 'carrier_command', 'SwapStepper', 40);
+	this.game.add.bitmapText(80, 450, 'carrier_command', 'Press <space> to play!', 15);
+	this.game.add.bitmapText(120, 500, 'carrier_command', 'Copyright Henry Olson 2016', 10);
+
+	
+
+	/*
 	ctx.font = "55px Unibody-reg";
 	ctx.fillStyle = "rgb(255,255,255)";
 	ctx.fillText("SwapStepper", titleTextX, titleTextY);
@@ -231,11 +270,13 @@ function drawTitle() {
 	ctx.font = "9px Unibody-reg";
 	ctx.fillText("Copyright Henry Olson 2016", 180, 500);
 	
+	*/
 	rects.forEach(function(Rect) {
 			
 		Rect.draw();
 	});
 	drawCatcher();
+	
 }
 
 function deathAnimation(timer) {
@@ -315,33 +356,39 @@ function drawOrb(xpos, ypos, color) {
 // draw the "outside circle"
 function drawOutsideCircle() {
 	
-	ctx.beginPath();
-	ctx.arc(x, y, 264, Math.PI * .25, Math.PI * 0.75, false);
-	ctx.strokeStyle = convertToAlpha(sideColors[2]);
-	ctx.lineWidth = 2;
-	ctx.stroke();
-	ctx.closePath();
+	var bmd = game.add.bitmapData(game.width,game.height);
 	
-	ctx.beginPath();
-	ctx.arc(x, y, 264, Math.PI * .75, Math.PI * 1.25, false);
-	ctx.strokeStyle = convertToAlpha(sideColors[3]);
-	ctx.lineWidth = 2;
-	ctx.stroke();
-	ctx.closePath();
+	bmd.ctx.beginPath();
+	bmd.ctx.arc(x, y, 264, Math.PI * .25, Math.PI * 0.75, false);
+	bmd.ctx.strokeStyle = convertToAlpha(sideColors[2]);
+	bmd.ctx.lineWidth = 2;
+	bmd.ctx.stroke();
+	bmd.ctx.closePath();
 	
-	ctx.beginPath();
-	ctx.arc(x, y, 264, Math.PI * 1.25, Math.PI * 1.75, false);
-	ctx.strokeStyle = convertToAlpha(sideColors[0]);
-	ctx.lineWidth = 2;
-	ctx.stroke();
-	ctx.closePath();
+	bmd.ctx.beginPath();
+	bmd.ctx.arc(x, y, 264, Math.PI * .75, Math.PI * 1.25, false);
+	bmd.ctx.strokeStyle = convertToAlpha(sideColors[3]);
+	bmd.ctx.lineWidth = 2;
+	bmd.ctx.stroke();
+	bmd.ctx.closePath();
 	
-	ctx.beginPath();
-	ctx.arc(x, y, 264, Math.PI * 1.75, Math.PI * 0.25, false);
-	ctx.strokeStyle = convertToAlpha(sideColors[1]);
-	ctx.lineWidth = 2;
-	ctx.stroke();
-	ctx.closePath();
+	bmd.ctx.beginPath();
+	bmd.ctx.arc(x, y, 264, Math.PI * 1.25, Math.PI * 1.75, false);
+	bmd.ctx.strokeStyle = convertToAlpha(sideColors[0]);
+	bmd.ctx.lineWidth = 2;
+	bmd.ctx.stroke();
+	bmd.ctx.closePath();
+	
+	bmd.ctx.beginPath();
+	bmd.ctx.arc(x, y, 264, Math.PI * 1.75, Math.PI * 0.25, false);
+	bmd.ctx.strokeStyle = convertToAlpha(sideColors[1]);
+	bmd.ctx.lineWidth = 2;
+	bmd.ctx.stroke();
+	bmd.ctx.closePath();
+	
+	bmd.smoothed = false;
+    // use the bitmap data as the texture for the sprite
+    var sprite = game.add.sprite(0, 0, bmd);
 }
 
 // convert an rgb color into an rgba
